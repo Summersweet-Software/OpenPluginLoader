@@ -1,0 +1,7 @@
+[project]
+name = "openpluginloader"
+version = "0.1.0"
+description = "A plugin loader library meant for wide use and quick adoption."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = ["mypy>=2.3.1", "setuptools>=84.0.0"]
