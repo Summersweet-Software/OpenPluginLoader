@@ -84,9 +84,9 @@ class DefaultPluginArchiver:
                 for proj_file in files:
                     full_path = root / proj_file
                     reparented = full_path.relative_to(src)
-                    print(f"- {reparented}")
                     if any(reparented.full_match(item) for item in exclude_paths):
                         continue
+                    print(f"- {reparented}")
                     output_file.add(full_path, str(reparented))
 
         return final_path

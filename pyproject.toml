@@ -8,3 +8,7 @@ dependencies = [
     "mypy>=2.3.1",
     "packaging>=26.3",
 ]
+
+[project.scripts]
+archive-plugin = "openpluginloader.__main__:archive_plugin"
+build-plugin = "openpluginloader.__main__:archive_plugin"

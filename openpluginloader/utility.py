@@ -2,16 +2,15 @@
 
 from contextlib import contextmanager
 import importlib.metadata
-from pathlib import Path
 import sys
 
-import packaging
 from packaging.requirements import Requirement
 
 
 @contextmanager
 def add_search_path(path: str):
-    """Temporarily append an item to the search path, remove it when the context manager exits"""
+    """Temporarily append an item to the search path, remove it when the
+    context manager exits"""
     index = len(sys.path)
     sys.path.append(path)
     try:
