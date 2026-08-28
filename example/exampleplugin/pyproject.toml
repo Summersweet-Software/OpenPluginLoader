@@ -4,4 +4,8 @@ version = "0.1.0"
 description = "Example Plugin"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = ["mypy"]
+
+[tool.plugin]
+includes = ["mypy"]
+src="src/"

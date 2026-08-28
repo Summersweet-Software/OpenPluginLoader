@@ -1,5 +1,0 @@
-name = "ExamplePlugin"
-author = "Abby"
-
-min_api_version = "0.1.0"
-max_api_version = "0.1.10"
