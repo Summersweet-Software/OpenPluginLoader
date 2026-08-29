@@ -1,25 +1,23 @@
-import os
 from pathlib import Path
-import sys
 
-from openpluginloader.archiving import DefaultPluginArchiver
+from openpluginloader.defaultstrategy import create_default_manager
 from openpluginloader.metadata import PluginMetadata
-from openpluginloader.versioning import parse_api_version
+from openpluginloader.versioning import ApiVersion, parse_api_version
+
+API_VERSION = ApiVersion(1, 0, 0, None)
+
 
 if __name__ == "__main__":
-    archiver = DefaultPluginArchiver()
+    manager = create_default_manager(API_VERSION, Path("example/exampleplugin/build/"))
+    manager.initialize_hooks()
 
-    meta = PluginMetadata(
-        "abby",
-        "example",
-        Path(),
-        parse_api_version("1.0.0"),
-        parse_api_version("1.0.0"),
-        parse_api_version("1.0.0"),
-        [],
-        {},
-    )
+    plugin_src = Path("example/exampleplugin")
+    plugin_dest = plugin_src / "build"
+    manager.archive_plugin(plugin_src, plugin_dest)
 
-    archiver.archive_plugin(
-        meta, Path("example/exampleplugin/"), Path("example/exampleplugin/build")
-    )
+    print()
+    print()
+
+    print("Plugin import result")
+
+    import plugins.ExamplePlugin.__ENTRY__

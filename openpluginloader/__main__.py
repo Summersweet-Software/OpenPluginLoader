@@ -2,8 +2,10 @@ import os
 from pathlib import Path
 import sys
 
-from openpluginloader.archiving import DefaultPluginArchiver
-from openpluginloader.metadata import DefaultMetadataLoader
+from openpluginloader.defaultstrategy import (
+    DefaultMetadataLoader,
+    DefaultPluginArchiver,
+)
 from openpluginloader.versioning import ApiVersion
 
 CWD = Path(os.getcwd())
@@ -11,6 +13,7 @@ DEFAULT_DEST = Path(os.getcwd()) / "build"
 
 
 def archive_plugin():
+    """Builds a plugin into a targz"""
     src = CWD if len(sys.argv) < 1 else Path(sys.argv[0])
     dest = DEFAULT_DEST if len(sys.argv) < 2 else Path(sys.argv[1])
 

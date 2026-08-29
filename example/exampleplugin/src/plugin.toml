@@ -1,5 +1,7 @@
 name = "ExamplePlugin"
 author = "Abby"
+entry = "main"
+version = "1.0"
 
 min_api_version = "0.1.0"
 max_api_version = "0.1.10"

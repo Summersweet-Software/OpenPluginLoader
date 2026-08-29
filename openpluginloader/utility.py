@@ -3,6 +3,7 @@
 from contextlib import contextmanager
 import importlib.metadata
 import sys
+from types import ModuleType
 
 from packaging.requirements import Requirement
 
@@ -30,6 +31,35 @@ def set_search_path(new_path: list[str]):
     finally:
         sys.path.clear()
         sys.path.extend(old)
+
+
+@contextmanager
+def add_meta_path(hook):
+    old = [*sys.meta_path]
+    sys.meta_path.clear()
+    sys.meta_path.append(hook)
+    try:
+        yield
+    finally:
+        sys.meta_path.clear()
+        sys.meta_path.extend(old)
+
+
+@contextmanager
+def clear_module_caches(default: dict[str, ModuleType] | None = None):
+    """Temporarily clear module caches and return them to their previous state
+    after the context manager exits"""
+
+    modules = {**sys.modules}
+
+    sys.modules.clear()
+    if default is not None:
+        sys.modules.update(default)
+    try:
+        yield
+    finally:
+        sys.modules.clear()
+        sys.modules.update(modules)
 
 
 def get_recursive_includes(
