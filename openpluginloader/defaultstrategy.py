@@ -1,14 +1,15 @@
 """The default strategy for loading plugins."""
 
 import importlib
-from importlib.abc import FileLoader, InspectLoader, Loader
-from importlib.machinery import ModuleSpec, PathFinder
+from importlib.abc import FileLoader
+from importlib.machinery import ModuleSpec
 import os
 from pathlib import Path
 import sys
 import tarfile
 import tomllib
 from types import ModuleType
+import typing
 
 from openpluginloader.loader import PluginManager
 from openpluginloader.metadata import (
@@ -18,16 +19,16 @@ from openpluginloader.metadata import (
 )
 from openpluginloader.scanner import PluginScanner
 from openpluginloader.utility import (
-    add_meta_path,
-    add_search_path,
     clear_module_caches,
     get_distribution_paths,
     get_recursive_includes,
+    set_meta_paths,
 )
 from openpluginloader.versioning import ApiVersion, parse_api_version
 import importlib._bootstrap
 import importlib._bootstrap_external
 
+# if not typing.TYPE_CHECKING:
 from gzip import GzipFile
 
 # current module cache
@@ -242,7 +243,12 @@ class TarGzPluginLoader(TarGzLoader):
         importlib.invalidate_caches()
 
         with clear_module_caches(DEFAULT_MODS):
-            with add_meta_path(TarGzImportHook(self.tar_file_path)):
+            with set_meta_paths(
+                [
+                    TarGzImportHook(self.tar_file_path, Path("site-packages")),
+                    TarGzImportHook(self.tar_file_path, Path()),
+                ]
+            ):
                 return importlib._bootstrap_external.SourceLoader.exec_module(
                     self, module
                 )
@@ -261,11 +267,15 @@ class TarGzImportHook:
 
     tar_file_path: Path
 
-    def __init__(self, tar_file_path: Path):
+    sub_path: Path
+    """A path inside of the targz to begin searching"""
+
+    def __init__(self, tar_file_path: Path, sub_path: Path):
         self.tar_file_path = tar_file_path
+        self.sub_path = sub_path
 
     def find_spec(self, fullname: str, path, target=None) -> ModuleSpec | None:
-        fullname_path = Path("site-packages/" + "/".join(fullname.split(".")))
+        fullname_path = self.sub_path / "/".join(fullname.split("."))
         if isinstance(path, list):
             path = path[0] if len(path) > 0 else None
 

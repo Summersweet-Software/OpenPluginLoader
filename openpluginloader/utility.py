@@ -34,10 +34,10 @@ def set_search_path(new_path: list[str]):
 
 
 @contextmanager
-def add_meta_path(hook):
+def set_meta_paths(hooks: list):
     old = [*sys.meta_path]
     sys.meta_path.clear()
-    sys.meta_path.append(hook)
+    sys.meta_path.extend(hooks)
     try:
         yield
     finally:
