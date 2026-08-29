@@ -1,8 +1,7 @@
 from pathlib import Path
 
 from openpluginloader.defaultstrategy import create_default_manager
-from openpluginloader.metadata import PluginMetadata
-from openpluginloader.versioning import ApiVersion, parse_api_version
+from openpluginloader.versioning import ApiVersion
 
 API_VERSION = ApiVersion(1, 0, 0, None)
 

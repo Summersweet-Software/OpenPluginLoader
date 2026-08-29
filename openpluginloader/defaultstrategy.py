@@ -5,7 +5,6 @@ from importlib.abc import FileLoader
 from importlib.machinery import ModuleSpec
 import os
 from pathlib import Path
-import sys
 import tarfile
 import tomllib
 from types import ModuleType
@@ -19,20 +18,24 @@ from openpluginloader.metadata import (
 )
 from openpluginloader.scanner import PluginScanner
 from openpluginloader.utility import (
+    DEFAULT_MODS,
     clear_module_caches,
     get_distribution_paths,
     get_recursive_includes,
+    set_default_module_cache,
     set_meta_paths,
 )
 from openpluginloader.versioning import ApiVersion, parse_api_version
 import importlib._bootstrap
 import importlib._bootstrap_external
 
-# if not typing.TYPE_CHECKING:
-from gzip import GzipFile
+if not typing.TYPE_CHECKING:
+    # Ensure GzipFile is included
+    #   (stops things from breaking when we reset module cache)
+    from gzip import GzipFile
 
-# current module cache
-DEFAULT_MODS = {**sys.modules}
+
+set_default_module_cache()  # (VERY IMPORTANT)
 
 
 class DefaultMetadataLoader:
@@ -97,13 +100,20 @@ class DefaultMetadataLoader:
 class DefaultPluginArchiver:
     """Archives plugins in a targz format"""
 
-    __slots__ = ("extension",)
+    __slots__ = ("extension", "enable_logging")
 
     extension: str
     """File extension used for file"""
+    enable_logging: bool
 
-    def __init__(self, *, extension: str = "tar.gz"):
+    def __init__(self, *, extension: str = "tar.gz", enable_logging=True):
         self.extension = extension
+        self.enable_logging = enable_logging
+
+    def log(self, *args, **kwargs):
+        if not self.enable_logging:
+            return
+        print(*args, **kwargs)
 
     def archive_plugin(
         self, meta: PluginMetadata, src: Path, destination: Path
@@ -139,10 +149,10 @@ class DefaultPluginArchiver:
 
         with tarfile.open(final_path, "x:gz") as output_file:
             included_files = []
-            print("Adding Include Packages:")
+            self.log("Adding Include Packages:")
             # add files from includes
             for dist in include_dists:
-                print(f"- {dist.name}=={dist.version}")
+                self.log(f"- {dist.name}=={dist.version}")
                 # Add every file into tarfile's site-packages.
                 for dist_file in get_distribution_paths(dist):
                     if dist_file in included_files:
@@ -152,8 +162,8 @@ class DefaultPluginArchiver:
                         dist_file.locate(), f"site-packages/{str(dist_file)}"
                     )
 
-            print()
-            print("Adding Project Files:")
+            self.log()
+            self.log("Adding Project Files:")
 
             for root, _, files in src.walk():
                 for proj_file in files:
@@ -161,10 +171,15 @@ class DefaultPluginArchiver:
                     reparented = full_path.relative_to(src)
                     if any(reparented.full_match(item) for item in exclude_paths):
                         continue
-                    print(f"- {reparented}")
+                    self.log(f"- {reparented}")
                     output_file.add(full_path, str(reparented))
 
         return final_path
+
+    def dearchive_plugin(self, src: Path, destination: Path) -> Path:
+        with tarfile.open(src, "r:gz") as f:
+            f.extractall(destination)
+        return destination
 
 
 class DefaultPluginScanner:
@@ -317,12 +332,19 @@ class TarGzPluginImportHook:
     a plugin within whatever plugin path is being used
     """
 
+    plugin_path: Path
+    known_plugins: list[PluginMetadata]
+    plugin_module_cache: dict[str, ModuleSpec]
+    plugins_module: ModuleSpec
+
     def __init__(
-        self, plugin_path: Path, scanner: PluginScanner, api_version: ApiVersion
+        self,
+        plugin_path: Path,
+        known_plugins: list[PluginMetadata],
     ):
         self.plugin_path = plugin_path
 
-        self.known_plugins = scanner.get_available_plugins(api_version)
+        self.known_plugins = known_plugins
         self.plugin_module_cache: dict[str, ModuleSpec] = {}
 
         self.plugins_module = ModuleSpec(
@@ -407,14 +429,18 @@ class ImportLoader:
     Uses dynamic imports and temporarily modifies python's path environment.
     """
 
-    # TODO: look into path hooks, info is a little lacking on them
-
     def __init__(self):
         pass
 
 
-def create_default_manager(api_version: ApiVersion, plugin_path: Path):
-    """Creates the default plugin manager"""
+def create_default_manager(
+    api_version: ApiVersion, plugin_path: Path, enable_archive_logging=True
+):
+    """Creates the default plugin manager
+
+    enable_archive_logging - when enabled- archiving will print out added
+      site-packages and files
+    """
 
     meta_loader = DefaultMetadataLoader()
     scanner = DefaultPluginScanner(plugin_path, meta_loader)
@@ -422,10 +448,12 @@ def create_default_manager(api_version: ApiVersion, plugin_path: Path):
     return PluginManager(
         metadata_loader=meta_loader,
         loading_strategy=ImportLoader(),
-        archiver=DefaultPluginArchiver(),
+        archiver=DefaultPluginArchiver(enable_logging=enable_archive_logging),
         plugin_scanner=scanner,
         api_version=api_version,
         import_hooks=[
-            TarGzPluginImportHook(plugin_path, scanner, api_version),
+            TarGzPluginImportHook(
+                plugin_path, scanner.get_available_plugins(api_version)
+            ),
         ],
     )

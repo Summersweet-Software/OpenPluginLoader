@@ -7,6 +7,21 @@ from types import ModuleType
 
 from packaging.requirements import Requirement
 
+# current module cache
+DEFAULT_MODS = {**sys.modules}
+
+
+def set_default_module_cache():
+    """Sets the default module cache. Can help if you notice missing imports
+    that are part of the import machinery your plugin managing strategy
+    implements.
+
+    These typically can't be easily reimported on the fly because every
+    sys.meta_path entry is removed and replaced (at least )
+    """
+    global DEFAULT_MODS
+    DEFAULT_MODS = {**sys.modules}
+
 
 @contextmanager
 def add_search_path(path: str):
