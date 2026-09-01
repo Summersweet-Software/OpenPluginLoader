@@ -5,10 +5,68 @@ description = "A plugin loader library meant for wide use and quick adoption."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "mypy>=2.3.1",
     "packaging>=26.3",
+]
+
+license = { text = "MIT-only" }
+keywords = [
+    "plugins",
+    "plugin",
+    "plugin loader",
+    "plugin-loader",
+    "import hooks",
+    "imports",
+    "application development",
+    "packaging",
+    "tool",
+    "library",
+    "targz",
+    "freezing",
+    "type-annotated",
+]
+classifiers = [
+    # How mature is this project? Common values are
+    #   3 - Alpha
+    #   4 - Beta
+    #   5 - Production/Stable
+    "Development Status :: 5 - Production/Stable",
+
+    # Indicate who your project is intended for
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Archiving :: Packaging",
+    "Topic :: Utilities",
+
+    # Specify the Python versions you support here.
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Natural Language :: English",
+    "Typing :: Typed",
 ]
 
 [project.scripts]
 archive-plugin = "openpluginloader.__main__:archive_plugin"
 build-plugin = "openpluginloader.__main__:archive_plugin"
+
+
+[project.urls]
+Homepage = "https://summersweet.software"
+Repository = "https://github.com/summersweet-software/openpluginloader"
+Issues = "https://github.com/summersweet-software/openpluginloader/issues"
+# Documentation = "https://openpluginloader.readthedocs.io/en/"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.19.1",
+    "pytest>=9.0.2",
+]
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true
