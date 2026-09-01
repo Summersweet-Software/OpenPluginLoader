@@ -11,6 +11,22 @@ class ApiVersion(NamedTuple):
     tag: str | None
     """Extra data attached to the version."""
 
+    @staticmethod
+    def _compare_part_lt(x: str | int, y: str | int) -> bool:
+        if isinstance(x, int) and isinstance(y, int) and x < y:
+            return True
+        if isinstance(x, str) and isinstance(y, str) and x < y:
+            return True
+        return False
+
+    @staticmethod
+    def _compare_part_gt(x: str | int, y: str | int) -> bool:
+        if isinstance(x, int) and isinstance(y, int) and x > y:
+            return True
+        if isinstance(x, str) and isinstance(y, str) and x > y:
+            return True
+        return False
+
     def __gt__(self, other: "ApiVersion | tuple[int | str | None, ...]") -> bool:
         if not isinstance(other, ApiVersion):
             return False
@@ -19,23 +35,13 @@ class ApiVersion(NamedTuple):
             if self_part is None or other_part is None:
                 continue
 
-            if (
-                isinstance(self_part, int)
-                and isinstance(other_part, int)  # type checking fuckery.
-                and self_part < other_part
-            ):
-                return False
-            if (
-                isinstance(self_part, str)
-                and isinstance(other_part, str)
-                and self_part < other_part
-            ):
+            if self._compare_part_lt(self_part, other_part):
                 return False
 
-            if c == len(self) - 1 and self_part == other_part:
-                return False
+            if self._compare_part_gt(self_part, other_part):
+                return True
 
-        return True
+        return False
 
     def __ge__(self, other: "ApiVersion | tuple[int | str | None, ...]") -> bool:
         if not isinstance(other, ApiVersion):
@@ -45,18 +51,11 @@ class ApiVersion(NamedTuple):
             if self_part is None or other_part is None:
                 continue
 
-            if (
-                isinstance(self_part, int)
-                and isinstance(other_part, int)  # type checking fuckery.
-                and self_part < other_part
-            ):
+            if self._compare_part_lt(self_part, other_part):
                 return False
-            if (
-                isinstance(self_part, str)
-                and isinstance(other_part, str)
-                and self_part < other_part
-            ):
-                return False
+
+            if self._compare_part_gt(self_part, other_part):
+                return True
 
         return True
 
@@ -68,23 +67,13 @@ class ApiVersion(NamedTuple):
             if self_part is None or other_part is None:
                 continue
 
-            if (
-                isinstance(self_part, int)
-                and isinstance(other_part, int)  # type checking fuckery.
-                and self_part > other_part
-            ):
-                return False
-            if (
-                isinstance(self_part, str)
-                and isinstance(other_part, str)
-                and self_part > other_part
-            ):
+            if self._compare_part_gt(self_part, other_part):
                 return False
 
-            if c == len(self) - 1 and self_part == other_part:
-                return False
+            if self._compare_part_lt(self_part, other_part):
+                return True
 
-        return True
+        return False
 
     def __le__(self, other: "ApiVersion | tuple[int | str | None, ...]") -> bool:
         if not isinstance(other, ApiVersion):
@@ -94,20 +83,21 @@ class ApiVersion(NamedTuple):
             if self_part is None or other_part is None:
                 continue
 
-            if (
-                isinstance(self_part, int)
-                and isinstance(other_part, int)  # type checking fuckery.
-                and self_part > other_part
-            ):
-                return False
-            if (
-                isinstance(self_part, str)
-                and isinstance(other_part, str)
-                and self_part > other_part
-            ):
+            if self._compare_part_gt(self_part, other_part):
                 return False
 
+            if self._compare_part_lt(self_part, other_part):
+                return True
+
         return True
+
+    def __repr__(self) -> str:
+        version = f"v{self.major}.{self.minor}"
+        if self.patch is not None:
+            version += f".{self.patch}"
+        if self.tag is not None:
+            version += f"-{self.tag}"
+        return version
 
 
 class VersionFormatError(ValueError): ...
@@ -132,7 +122,7 @@ type VersionTuple = tuple[int, int] | tuple[int, int, int | None] | tuple[
 
 
 def parse_string_api_version(version: str) -> ApiVersion:
-    """Parses a string formatted in this way: `<major>.<minor>[.patch][.tag]`
+    """Parses a string formatted in this way: `<major>.<minor>[.<patch>][-<tag>]`
     major, minor, and patch version must be numeric characters only ([0-9]).
     version `tag` can be anything.
     """
@@ -169,17 +159,19 @@ def parse_string_api_version(version: str) -> ApiVersion:
     if len(parts) == 2:
         return ApiVersion(major, minor, None, None)
 
-    if not parts[2].isnumeric():
+    patch_parts = parts[2].split("-")
+
+    if not patch_parts[0].isnumeric():
         raise VersionStringFormatError(
             f"Version string: `{version}` contains an invalid patch version (must only contain characters: [0-9])"
         )
 
-    patch = int(parts[2])
+    patch = int(patch_parts[0])
 
-    if len(parts) == 3:
+    if len(patch_parts) == 1:
         return ApiVersion(major, minor, patch, None)
 
-    return ApiVersion(major, minor, patch, parts[3])
+    return ApiVersion(major, minor, patch, patch_parts[1])
 
 
 def parse_table_api_version(version: VersionDict) -> ApiVersion:

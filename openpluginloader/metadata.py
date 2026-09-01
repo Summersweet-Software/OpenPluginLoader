@@ -41,6 +41,14 @@ class PluginMetadata(NamedTuple):
     def plugin_id(self) -> str:
         return f"{self.author}.{self.name}"
 
+    def __str__(self) -> str:
+        return f"PluginMetadata(\n\t{(
+            "\n\t".join(f"{name}={val}" for name, val in self._asdict().items())
+        )}\n)"
+
+    def __repr__(self) -> str:
+        return f"PluginMetadata(id={self.plugin_id})"
+
 
 class PluginMetadataLoader(Protocol):
     def contains_meta(self, plugin_src: Path) -> bool: ...

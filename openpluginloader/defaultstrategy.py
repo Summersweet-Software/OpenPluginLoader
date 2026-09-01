@@ -29,11 +29,10 @@ from openpluginloader.versioning import ApiVersion, parse_api_version
 import importlib._bootstrap
 import importlib._bootstrap_external
 
-if not typing.TYPE_CHECKING:
-    # Ensure GzipFile is included
-    #   (stops things from breaking when we reset module cache)
-    from gzip import GzipFile
-
+# if not typing.TYPE_CHECKING:
+# # Ensure GzipFile is included
+# #   (stops things from breaking when we reset module cache)
+from gzip import GzipFile
 
 set_default_module_cache()  # (VERY IMPORTANT)
 
@@ -411,7 +410,7 @@ class TarGzPluginImportHook:
         if corrosponding_plugin is None:
             return
 
-        # Use plugin entyr when trying to import `__ENTRY__`
+        # Use plugin entry when trying to import `__ENTRY__`
         if len(fullname_parts) >= 3 and fullname_parts[2] == "__ENTRY__":
             fullname_parts[2] = corrosponding_plugin.entry
             fullname = ".".join(fullname_parts)
@@ -435,7 +434,7 @@ class ImportLoader:
 
 def create_default_manager(
     api_version: ApiVersion, plugin_path: Path, enable_archive_logging=True
-):
+) -> PluginManager:
     """Creates the default plugin manager
 
     enable_archive_logging - when enabled- archiving will print out added

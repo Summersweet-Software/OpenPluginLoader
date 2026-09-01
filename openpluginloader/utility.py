@@ -4,8 +4,11 @@ from contextlib import contextmanager
 import importlib.metadata
 import sys
 from types import ModuleType
+from typing import NamedTuple
 
 from packaging.requirements import Requirement
+
+from openpluginloader.metadata import PluginMetadata
 
 # current module cache
 DEFAULT_MODS = {**sys.modules}
@@ -17,10 +20,11 @@ def set_default_module_cache():
     implements.
 
     These typically can't be easily reimported on the fly because every
-    sys.meta_path entry is removed and replaced (at least )
+    sys.meta_path entry is removed and replaced (at least temporarily)
     """
     global DEFAULT_MODS
-    DEFAULT_MODS = {**sys.modules}
+    DEFAULT_MODS.clear()
+    DEFAULT_MODS.update(sys.modules)
 
 
 @contextmanager
@@ -109,3 +113,141 @@ def get_distribution_paths(
         return []
 
     return dist.files
+
+
+def find_plugin_from_list(
+    id: str, plugins: list[PluginMetadata]
+) -> PluginMetadata | None:
+    for plugin in plugins:
+        if id == plugin.plugin_id:
+            return plugin
+    return None
+
+
+class DependencyError(Exception):
+    pass
+
+
+class DependencyOutOfDate(DependencyError):
+    pass
+
+
+class DependencyTooNew(DependencyError):
+    pass
+
+
+class DependencyMissingError(DependencyError):
+    pass
+
+
+class CircularDependencyError(DependencyError):
+    pass
+
+
+# TODO: Implement caching
+def generate_dependency_list(
+    plugin: PluginMetadata, plugins: list[PluginMetadata], seen: list[str] | None = None
+) -> list[PluginMetadata]:
+    """Generates a recursive dependency list. Gets dependencies of dependencies
+    etc. etc."""
+
+    if seen is None:
+        seen = [plugin.plugin_id]
+    elif plugin.plugin_id in seen:
+        raise CircularDependencyError(
+            f"Circular dependency found while generating dependencies for: {plugin.plugin_id}"
+        )
+    else:
+        # needs to make a new "seen list" (otherwise bad times will occur)
+        seen = [*seen, plugin.plugin_id]
+
+    dependencies = []
+
+    for dep in plugin.dependencies:
+        dep_plugin = find_plugin_from_list(dep.plugin_id, plugins)
+        if dep_plugin is None:
+            raise DependencyMissingError(f"Could not find plugin: {dep.plugin_id}")
+        # check if plugin was already added
+        if any(
+            dep_plugin.plugin_id == dependency.plugin_id for dependency in dependencies
+        ):
+            continue
+        if dep_plugin.plugin_version < dep.min_version:
+            raise DependencyOutOfDate(
+                f"{plugin.plugin_id} requires {dep.plugin_id}"
+                f" {dep.min_version} or higher. {dep.plugin_id} is "
+                f"only version {dep_plugin.plugin_version}"
+            )
+        if dep_plugin.plugin_version > dep.max_version:
+            raise DependencyTooNew(
+                f"{plugin.plugin_id} requires {dep.plugin_id}"
+                f" {dep.max_version} or lower. {dep.plugin_id} is "
+                f"only version {dep_plugin.plugin_version}"
+            )
+        dependencies.append(dep_plugin)
+        sub_dependencies = generate_dependency_list(dep_plugin, plugins, seen)
+        dependencies.extend(
+            sub_depend
+            for sub_depend in sub_dependencies
+            if not any(
+                sub_depend.plugin_id == dependency.plugin_id
+                for dependency in dependencies
+            )  # ensure no duplicates
+        )
+
+    return dependencies
+
+
+def generate_dependents_list(plugin_id: str, plugins: list[PluginMetadata]):
+    """Generates a list of dependents"""
+
+    output = []
+
+    for plugin in plugins:
+        dependencies = generate_dependency_list(plugin, plugins)
+        if any(dep.plugin_id == plugin_id for dep in dependencies):
+            output.append(plugin)
+
+    return output
+
+
+def create_dependent_dict(
+    plugins: list[PluginMetadata],
+) -> dict[str, list[PluginMetadata]]:
+    return {
+        plugin.plugin_id: generate_dependents_list(plugin.plugin_id, plugins)
+        for plugin in plugins
+    }
+
+
+def sort_plugins(plugins: list[PluginMetadata]) -> list[PluginMetadata]:
+    """Sorts plugins by gradually adding them to our output list.
+    Plugins start by being loaded last, gradually we check if they can move
+    further up in the load order to let them be loaded sooner. If a plugin is
+    found to depend on a plugin that it is being compared against, then it will
+    immediately be added after that dependency and the algorithm will move
+    onto the next plugin in need of adding to our output.
+
+    What is this algorithm called? Idk, I didn't go to college. I just
+    came up with it on the fly. My best guess after trying to find a name is
+    a "topological sort" but I think that a class of sorting algorithms rather
+    than a specific algorithm. Idk.
+    """
+    output: list[PluginMetadata] = []
+    dependents = create_dependent_dict(plugins)
+
+    for plugin in plugins:
+        # iterate through output list in reverse order
+        #   (starting with plugins that load last)
+        for c, out_plugin in enumerate(reversed(output)):
+            out_dependents = dependents[out_plugin.plugin_id]
+            # check if our output plugin dependency on the current plugin to
+            #   be added- if so, we must place our current plugin AFTER the
+            #   one already within the output list
+            if any(plugin.plugin_id == dep.plugin_id for dep in out_dependents):
+                output.insert(len(output) - c, plugin)  # place plugin after current one
+                break
+        else:
+            output.insert(0, plugin)  # add plugin to the beginning
+
+    return output
