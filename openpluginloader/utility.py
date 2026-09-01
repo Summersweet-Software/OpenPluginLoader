@@ -4,11 +4,10 @@ from contextlib import contextmanager
 import importlib.metadata
 import sys
 from types import ModuleType
-from typing import NamedTuple
 
 from packaging.requirements import Requirement
 
-from openpluginloader.metadata import PluginMetadata
+from openpluginloader.metadata import PluginLoadError, PluginMetadata
 
 # current module cache
 DEFAULT_MODS = {**sys.modules}
@@ -124,7 +123,7 @@ def find_plugin_from_list(
     return None
 
 
-class DependencyError(Exception):
+class DependencyError(PluginLoadError):
     pass
 
 
@@ -251,3 +250,31 @@ def sort_plugins(plugins: list[PluginMetadata]) -> list[PluginMetadata]:
             output.insert(0, plugin)  # add plugin to the beginning
 
     return output
+
+
+__all__ = [
+    # Module caching
+    "DEFAULT_MODS",
+    "set_default_module_cache",
+    # context managers
+    "add_search_path",
+    "set_search_path",
+    "set_meta_paths",
+    "clear_module_caches",
+    # archiver utilities
+    "get_recursive_includes",
+    "get_distribution_paths",
+    # random utils
+    "find_plugin_from_list",
+    # dependency sorting
+    "generate_dependency_list",
+    "generate_dependents_list",
+    "create_dependent_dict",
+    "sort_plugins",
+    # Exceptions
+    "DependencyError",
+    "DependencyOutOfDate",
+    "DependencyTooNew",
+    "DependencyMissingError",
+    "CircularDependencyError",
+]

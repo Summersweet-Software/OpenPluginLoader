@@ -10,3 +10,6 @@ class PluginScanner(Protocol):
     def get_available_plugins(
         self, api_version: ApiVersion
     ) -> list[PluginMetadata]: ...
+
+
+__all__ = ["PluginScanner"]

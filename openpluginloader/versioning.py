@@ -100,7 +100,8 @@ class ApiVersion(NamedTuple):
         return version
 
 
-class VersionFormatError(ValueError): ...
+class VersionFormatError(ValueError):
+    pass
 
 
 class VersionStringFormatError(VersionFormatError):
@@ -284,3 +285,20 @@ def parse_api_version(version: str | VersionDict | VersionTuple):
             return parse_tuple_api_version(version)
         case _:
             raise VersionFormatError("Expected a table, tuple, or string version")
+
+
+__all__ = [
+    "ApiVersion",
+    "parse_string_api_version",
+    "parse_table_api_version",
+    "parse_tuple_api_version",
+    "parse_api_version",
+    # Exceptions
+    "VersionFormatError",
+    "VersionStringFormatError",
+    "VersionTableFormatError",
+    "VersionTupleFormatError",
+    # Types
+    "VersionDict",
+    "VersionTuple",
+]

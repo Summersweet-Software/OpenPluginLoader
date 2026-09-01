@@ -8,15 +8,13 @@ from pathlib import Path
 import tarfile
 import tomllib
 from types import ModuleType
-import typing
 
-from openpluginloader.loader import PluginManager
+from openpluginloader.manager import PluginManager
 from openpluginloader.metadata import (
     PluginLoadError,
     PluginMetadata,
     PluginMetadataLoader,
 )
-from openpluginloader.scanner import PluginScanner
 from openpluginloader.utility import (
     DEFAULT_MODS,
     clear_module_caches,
@@ -203,7 +201,8 @@ class DefaultPluginScanner:
             plugin_src = self.plugin_path / file
             if not self.meta_loader.contains_meta(plugin_src):
                 continue
-            output.append(self.meta_loader.load_metadata(plugin_src, api_version))
+            metadata = self.meta_loader.load_metadata(plugin_src, api_version)
+            output.append(metadata)
         return output
 
 
@@ -467,3 +466,21 @@ def create_default_manager(
             ),
         ],
     )
+
+
+__all__ = [
+    "create_default_manager",
+    # strategies
+    "ImportLoader",
+    "DefaultPluginScanner",
+    "DefaultMetadataLoader",
+    "DefaultPluginArchiver",
+    # import hooks
+    # # loaders
+    "TarGzLoader",
+    "TarGzPluginLoader",
+    "PluginFolderLoader",
+    # # finders
+    "TarGzImportHook",
+    "TarGzPluginImportHook",
+]

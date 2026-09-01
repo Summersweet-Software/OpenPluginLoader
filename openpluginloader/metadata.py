@@ -17,7 +17,8 @@ class PluginDependency(NamedTuple):
 
 
 class PluginMetadata(NamedTuple):
-    """The metadata contained typically within the 'plugin.toml' file inside of each plugin"""
+    """The metadata contained typically within the 'plugin.toml'
+    file inside of each plugin"""
 
     author: str
     name: str

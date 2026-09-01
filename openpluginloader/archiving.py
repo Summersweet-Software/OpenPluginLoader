@@ -14,3 +14,6 @@ class PluginArchiver(Protocol):
     ) -> Path: ...
 
     def dearchive_plugin(self, src: Path, destination: Path) -> Path: ...
+
+
+__all__ = ["PluginArchiver"]
