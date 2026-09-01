@@ -24,6 +24,7 @@ from openpluginloader.utility import (
     get_recursive_includes,
     set_default_module_cache,
     set_meta_paths,
+    sort_plugins,
 )
 from openpluginloader.versioning import ApiVersion, parse_api_version
 import importlib._bootstrap
@@ -430,6 +431,16 @@ class ImportLoader:
 
     def __init__(self):
         pass
+
+    def load_plugin(self, plugin: PluginMetadata):
+        """Loads an individual plugin"""
+        importlib.import_module(f"plugins.{plugin.name}.__ENTRY__")
+
+    def sort_plugins_by_load_order(
+        self, plugins: list[PluginMetadata]
+    ) -> list[PluginMetadata]:
+        """Determines the load order of plugins"""
+        return sort_plugins(plugins)
 
 
 def create_default_manager(

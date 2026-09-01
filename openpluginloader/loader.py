@@ -14,7 +14,7 @@ class PluginLoader(Protocol):
     plugins are imported
     """
 
-    def load_plugin(self, plugin):
+    def load_plugin(self, plugin: PluginMetadata):
         """Loads an individual plugin"""
         ...
 
@@ -38,6 +38,7 @@ class PluginManager:
         "api_version",
         "import_hooks",
         "known_plugins",
+        "_hooks_are_initialized",
     )
 
     metadata_loader: PluginMetadataLoader
@@ -53,6 +54,7 @@ class PluginManager:
     import_hooks: list
     """List of import hooks that need to be installed before plugins can be
     loaded"""
+    _hooks_are_initialized: bool
 
     known_plugins: list[PluginMetadata]
 
@@ -72,6 +74,7 @@ class PluginManager:
         self.plugin_scanner = plugin_scanner
         self.api_version = api_version
         self.import_hooks = import_hooks
+        self._hooks_are_initialized = False
 
         self.known_plugins = []
 
@@ -79,6 +82,13 @@ class PluginManager:
         """Initialize all import hooks and machinery"""
         for hook in self.import_hooks[::-1]:
             sys.meta_path.insert(0, hook)
+
+        self._hooks_are_initialized = True
+
+    def hooks_are_initialized(self) -> bool:
+        """Whether or not hooks have been initialized.
+        Deinitializing hooks resets this to `False`."""
+        return self._hooks_are_initialized
 
     def deinitialize_hooks(self):
         """I would not personally recommend using this!
@@ -90,6 +100,8 @@ class PluginManager:
 
         for hook in self.import_hooks:
             sys.meta_path.remove(hook)
+
+        self._hooks_are_initialized = False
 
     def load_all_plugins(self):
         """Load all plugins dynamically.
