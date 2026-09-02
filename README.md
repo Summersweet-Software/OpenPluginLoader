@@ -24,7 +24,7 @@ OPL is not going to help you make your plugin api itself, but it will make your 
 Making a plugin is fairly simple. A plugin has a few basic parts:
 - A `pyproject.toml` (optional)
 - A `plugin.toml`
-- A plugin entry point (default `__init__.py`, can be modified in your `pyproject.toml`)
+- A plugin entry point (default `__init__.py`, can be modified in your `plugin.toml`)
 
 ## pyproject.toml configuration options
 
