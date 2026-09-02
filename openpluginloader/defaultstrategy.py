@@ -28,9 +28,8 @@ from openpluginloader.versioning import ApiVersion, parse_api_version
 import importlib._bootstrap
 import importlib._bootstrap_external
 
-# if not typing.TYPE_CHECKING:
-# # Ensure GzipFile is included
-# #   (stops things from breaking when we reset module cache)
+# Ensure GzipFile is included
+#   (stops things from breaking when we reset module cache)
 from gzip import GzipFile
 
 set_default_module_cache()  # (VERY IMPORTANT)

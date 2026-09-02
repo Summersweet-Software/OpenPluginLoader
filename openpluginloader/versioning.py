@@ -135,7 +135,7 @@ def parse_string_api_version(version: str) -> ApiVersion:
         raise VersionStringFormatError(
             f"Version string: `{version}` did not contain enough parts (min 2, major + minor version)."
         )
-    if len(parts) > 4:
+    if len(parts) > 3:
         raise VersionStringFormatError(
             f"Version string: `{version}` contains too many parts (max 4, major + minor + patch + tag)."
         )

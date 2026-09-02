@@ -1,13 +1,12 @@
 from pathlib import Path
 
 from openpluginloader.defaultstrategy import create_default_manager
-from openpluginloader.metadata import PluginDependency, PluginMetadata
 from openpluginloader.utility import (
     create_dependent_dict,
     generate_dependency_list,
     sort_plugins,
 )
-from openpluginloader.versioning import ApiVersion, parse_api_version
+from openpluginloader.versioning import ApiVersion
 
 API_VERSION = ApiVersion(1, 0, 0, None)
 
