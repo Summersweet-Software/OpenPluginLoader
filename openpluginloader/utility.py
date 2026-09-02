@@ -21,7 +21,6 @@ def set_default_module_cache():
     These typically can't be easily reimported on the fly because every
     sys.meta_path entry is removed and replaced (at least temporarily)
     """
-    global DEFAULT_MODS
     DEFAULT_MODS.clear()
     DEFAULT_MODS.update(sys.modules)
 
@@ -39,11 +38,11 @@ def add_search_path(path: str):
 
 
 @contextmanager
-def set_search_path(new_path: list[str]):
+def set_search_path(new_paths: list[str]):
     """Temporarily set the search path, reset it when the context manager exits"""
     old = [*sys.path]
     sys.path.clear()
-    sys.path.extend(new_path)
+    sys.path.extend(new_paths)
     try:
         yield
     finally:
@@ -197,7 +196,9 @@ def generate_dependency_list(
     return dependencies
 
 
-def generate_dependents_list(plugin_id: str, plugins: list[PluginMetadata]):
+def generate_dependents_list(
+    plugin_id: str, plugins: list[PluginMetadata]
+) -> list[PluginMetadata]:
     """Generates a list of dependents"""
 
     output = []
