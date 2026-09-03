@@ -1,6 +1,6 @@
 [project]
 name = "openpluginloader"
-version = "0.1.0"
+version = "1.0.0"
 description = "A plugin loader library meant for wide use and quick adoption."
 readme = "README.md"
 requires-python = ">=3.13"
@@ -70,8 +70,3 @@ name = "testpypi"
 url = "https://test.pypi.org/simple/"
 publish-url = "https://test.pypi.org/legacy/"
 explicit = true
-
-# [tool.uv.workspace]
-# members = [
-#     "example",
-# ]

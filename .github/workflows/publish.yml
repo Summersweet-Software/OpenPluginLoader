@@ -1,10 +1,10 @@
-name: "Test Publish"
+name: "Publish"
 
 on:
   push:
-    branches: [ "main", "staging"]
-  pull_request:
-    branches: [ "main", "staging" ]
+    tags:
+      # Publish on any tag starting with a `v`, e.g., v0.1.0
+      - v*
 
 jobs:
   run:
@@ -22,15 +22,11 @@ jobs:
       - name: Install Python 3.13
         run: uv python install 3.13
       - name: Build
-        run: |
-          uv version --bump patch --bump dev=$RANDOM # random version id
-          uv build
+        run: uv build
       # Check that basic features work and we didn't miss to include crucial files
       - name: Smoke test (wheel)
         run: uv run --isolated --no-project --with dist/*.whl pytest
       - name: Smoke test (source distribution)
         run: uv run --isolated --no-project --with dist/*.tar.gz pytest
       - name: Publish
-        env:
-          TEST_PYPI_SECRET_KEY: ${{ secrets.TEST_PYPI_SECRET_KEY }}
-        run: uv publish --index testpypi --token $TEST_PYPI_SECRET_KEY
+        run: uv publish
