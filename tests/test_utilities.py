@@ -96,6 +96,9 @@ def test_get_recursive_includes__pytest():
         "Pygments",
     }
 
+    if sys.platform == "unix":
+        expected_names.pop("colorama")
+
     assert set(include.name for include in includes) == expected_names
 
 
