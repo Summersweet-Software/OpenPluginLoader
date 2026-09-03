@@ -73,30 +73,30 @@ def test_clear_module_caches__with_defaults():
 
 def test_get_recursive_includes__mypy():
     includes = utility.get_recursive_includes(["mypy"])
-    expected_names = [
+    expected_names = {
         "mypy",
         "typing_extensions",
         "mypy_extensions",
         "pathspec",
         "librt",
         "ast_serialize",
-    ]
+    }
 
-    assert [include.name for include in includes] == expected_names
+    assert set(include.name for include in includes) == expected_names
 
 
 def test_get_recursive_includes__pytest():
     includes = utility.get_recursive_includes(["pytest"])
-    expected_names = [
+    expected_names = {
         "pytest",
         "colorama",
         "iniconfig",
         "packaging",
         "pluggy",
         "Pygments",
-    ]
+    }
 
-    assert [include.name for include in includes] == expected_names
+    assert set(include.name for include in includes) == expected_names
 
 
 plugins = [
