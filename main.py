@@ -78,7 +78,7 @@ if __name__ == "__main__":
     manager.initialize_hooks()
 
     plugin_src = Path("example/exampleplugin")
-    plugin_dest = plugin_src / "build"
+    plugin_dest = plugin_src / "../plugins"
     manager.archive_plugin(plugin_src, plugin_dest)
 
     print()
@@ -105,4 +105,4 @@ if __name__ == "__main__":
     print(sort_plugins(plugins))
     print()
 
-    manager.load_all_plugins()
+    # manager.load_all_plugins()

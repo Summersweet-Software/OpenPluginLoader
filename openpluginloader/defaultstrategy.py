@@ -2,9 +2,10 @@
 
 import importlib
 from importlib.abc import FileLoader
-from importlib.machinery import ModuleSpec
+from importlib.machinery import BuiltinImporter, ModuleSpec
 import os
 from pathlib import Path
+import sys
 import tarfile
 import tomllib
 from types import ModuleType
@@ -45,6 +46,8 @@ class DefaultMetadataLoader:
 
     def contains_meta(self, plugin_src: Path) -> bool:
         if plugin_src.is_file():
+            if not tarfile.is_tarfile(plugin_src):
+                return False
             with tarfile.open(plugin_src, "r:gz") as file:
                 return "plugin.toml" in file.getnames()
         else:
@@ -260,6 +263,11 @@ class TarGzPluginLoader(TarGzLoader):
                 [
                     TarGzImportHook(self.tar_file_path, Path("site-packages")),
                     TarGzImportHook(self.tar_file_path, Path()),
+                    *(
+                        metapath
+                        for metapath in sys.meta_path
+                        if metapath is BuiltinImporter
+                    ),
                 ]
             ):
                 return importlib._bootstrap_external.SourceLoader.exec_module(
