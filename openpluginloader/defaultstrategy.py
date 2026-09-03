@@ -12,6 +12,7 @@ from types import ModuleType
 
 from openpluginloader.manager import PluginManager
 from openpluginloader.metadata import (
+    PluginDependency,
     PluginLoadError,
     PluginMetadata,
     PluginMetadataLoader,
@@ -92,7 +93,12 @@ class DefaultMetadataLoader:
             max_api_version=parse_api_version(
                 table.get("max_api_version", api_version)
             ),
-            dependencies=table.get("dependencies", []),
+            dependencies=[
+                PluginDependency(
+                    dep["plugin_id"], dep["min_version"], dep["max_version"]
+                )
+                for dep in table.get("dependencies", [])
+            ],
             aditional_meta=table,
         )
 
