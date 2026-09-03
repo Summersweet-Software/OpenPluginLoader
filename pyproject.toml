@@ -1,6 +1,6 @@
 [project]
 name = "openpluginloader"
-version = "1.0.0"
+version = "1.0.1"
 description = "A plugin loader library meant for wide use and quick adoption."
 readme = "README.md"
 requires-python = ">=3.13"
