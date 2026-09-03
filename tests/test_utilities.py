@@ -97,7 +97,7 @@ def test_get_recursive_includes__pytest():
     }
 
     if sys.platform != "win32":
-        expected_names.pop("colorama")
+        expected_names.remove("colorama")
 
     assert set(include.name for include in includes) == expected_names
 
