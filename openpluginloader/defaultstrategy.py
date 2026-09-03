@@ -221,26 +221,39 @@ class TarGzLoader(FileLoader):
         """Get archive's `__init__.py` file's contents OR send blank data
         if that file does not exist.
         """
-        with tarfile.open(self.tar_file_path, "r:gz") as f:
-            if str(path) + "/__init__.py" not in f.getnames():
+        if self.tar_file_path.is_file():
+            with tarfile.open(self.tar_file_path, "r:gz") as f:
+                if str(path) + "/__init__.py" not in f.getnames():
+                    return b""
+                fileio = f.extractfile("__init__.py")
+                if fileio is None:
+                    return b""
+                return fileio.read()
+        else:
+            if not (self.tar_file_path / "__init__.py").exists():
                 return b""
-            fileio = f.extractfile("__init__.py")
-            if fileio is None:
-                return b""
-            return fileio.read()
+            else:
+                with open(self.tar_file_path / "__init__.py", "rb") as f:
+                    return f.read()
 
     def get_data(self, path: str) -> bytes:
         if not str(path).endswith(".py"):
             return self.get_dunder_init_data(path)
 
         reparented = Path(path).relative_to(self.tar_file_path)
-        with tarfile.open(self.tar_file_path, "r:gz") as f:
-            if str(reparented).replace("\\", "/") not in f.getnames():
-                raise ImportError(reparented)  # module not found.
-            fileio = f.extractfile(str(reparented).replace("\\", "/"))
-            if fileio is None:
-                return b""
-            return fileio.read()
+        if self.tar_file_path.is_file():
+            with tarfile.open(self.tar_file_path, "r:gz") as f:
+                if str(reparented).replace("\\", "/") not in f.getnames():
+                    raise ImportError(reparented)  # module not found.
+                fileio = f.extractfile(str(reparented).replace("\\", "/"))
+                if fileio is None:
+                    return b""
+                return fileio.read()
+        else:
+            if not Path(path).exists():
+                raise ImportError(path)  # module not found.
+            with open(path, "rb") as f:
+                return f.read()
 
     def get_source(self, fullname):
         return self.get_data(self.path).decode()
