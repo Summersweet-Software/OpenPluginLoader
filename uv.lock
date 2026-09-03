@@ -234,7 +234,7 @@ wheels = [
 [[package]]
 name = "openpluginloader"
 version = "1.0.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "packaging" },
 ]
