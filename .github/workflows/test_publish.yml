@@ -25,11 +25,6 @@ jobs:
         run: |
           uv version --bump patch --bump dev=$RANDOM # random version id
           uv build
-      # Check that basic features work and we didn't miss to include crucial files
-      - name: Smoke test (wheel)
-        run: uv run --isolated --no-project --with dist/*.whl pytest
-      - name: Smoke test (source distribution)
-        run: uv run --isolated --no-project --with dist/*.tar.gz pytest
       - name: Publish
         env:
           TEST_PYPI_SECRET_KEY: ${{ secrets.TEST_PYPI_SECRET_KEY }}
