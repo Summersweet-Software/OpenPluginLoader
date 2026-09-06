@@ -95,7 +95,9 @@ def get_recursive_includes(
             for requirement in (current.requires or [])
             if (parsed := Requirement(requirement)).name
             not in (item.name for item in output)
-            and (parsed.marker is None or parsed.marker.evaluate())
+            and (
+                parsed.marker is None or parsed.marker.evaluate()
+            )  # marker includes things platform checking
         )
 
         output.append(current)
