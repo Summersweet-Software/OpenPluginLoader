@@ -491,7 +491,7 @@ class DefaultPluginImportHook:
             corrosponding_plugin = plugin
 
         if corrosponding_plugin is None:
-            return None
+            raise ImportError(f"Could not locate plugin: {plugin_name}.")
 
         # Use plugin entry when trying to import `__ENTRY__`
         if len(fullname_parts) >= 3 and fullname_parts[2] == "__ENTRY__":
