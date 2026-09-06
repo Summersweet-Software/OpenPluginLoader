@@ -3,9 +3,21 @@ import sys
 
 from openpluginloader.archiving import PluginArchiver
 from openpluginloader.loader import PluginLoader
-from openpluginloader.metadata import PluginMetadata, PluginMetadataLoader
+from openpluginloader.metadata import (
+    PluginLoadError,
+    PluginMetadata,
+    PluginMetadataLoader,
+)
 from openpluginloader.scanner import PluginScanner
 from openpluginloader.versioning import ApiVersion
+
+
+class PluginOutOfDate(PluginLoadError):
+    """Api version of the plugin is outdated"""
+
+
+class PluginTooNew(PluginLoadError):
+    """Api version of the plugin is too new"""
 
 
 class PluginManager:
@@ -86,13 +98,25 @@ class PluginManager:
 
         self._hooks_are_initialized = False
 
+    def load_plugin(self, plugin: PluginMetadata):
+        """Dynamically load an individual plugin
+
+        Important: Ensure you run `.initialize_hooks()` first
+        """
+        if plugin.min_api_version < self.api_version:
+            raise PluginOutOfDate(plugin, self.api_version)
+        if plugin.max_api_version > self.api_version:
+            raise PluginTooNew(plugin, self.api_version)
+
+        return self.loading_strategy.load_plugin(plugin)
+
     def load_all_plugins(self):
         """Load all plugins dynamically.
 
         Important: Ensure you run `.initialize_hooks()` first
         """
         for plugin in self.known_plugins:
-            self.loading_strategy.load_plugin(plugin)
+            self.load_plugin(plugin)
 
     def discover_plugins(self) -> list[PluginMetadata]:
         plugins = self.plugin_scanner.get_available_plugins(self.api_version)
@@ -104,4 +128,4 @@ class PluginManager:
         return self.archiver.archive_plugin(meta, src, dest)
 
 
-__all__ = ["PluginManager"]
+__all__ = ["PluginManager", "PluginOutOfDate", "PluginTooNew"]
