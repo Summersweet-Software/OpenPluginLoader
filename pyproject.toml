@@ -1,15 +1,16 @@
 [project]
 name = "openpluginloader"
-version = "1.0.2"
+version = "1.0.3"
 description = "A plugin loader library meant for wide use and quick adoption."
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = [
-    "packaging>=26.3",
-]
+dependencies = ["packaging>=26.3"]
 
 license = { text = "MIT-only" }
 keywords = [
+    "open",
+    "open plugin",
+    "open plugin loader",
     "plugins",
     "plugin",
     "plugin loader",
@@ -21,6 +22,8 @@ keywords = [
     "tool",
     "library",
     "targz",
+    "archiving",
+    "dependency freezing",
     "freezing",
     "type-annotated",
 ]
@@ -60,10 +63,7 @@ Issues = "https://github.com/summersweet-software/openpluginloader/issues"
 # Documentation = "https://openpluginloader.readthedocs.io/en/"
 
 [dependency-groups]
-dev = [
-    "mypy>=1.19.1",
-    "pytest>=9.0.2",
-]
+dev = ["mypy>=1.19.1", "pytest>=9.0.2"]
 
 [[tool.uv.index]]
 name = "testpypi"
@@ -81,4 +81,4 @@ package = true
 
 [tool.uv.build-backend]
 modules = ["openpluginloader"]
-module-root=""
+module-root = ""

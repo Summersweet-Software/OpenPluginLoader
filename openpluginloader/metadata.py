@@ -50,6 +50,9 @@ class PluginMetadata(NamedTuple):
     def __repr__(self) -> str:
         return f"PluginMetadata(id={self.plugin_id})"
 
+    def __hash__(self) -> int:
+        return hash(self.plugin_id)
+
 
 class PluginMetadataLoader(Protocol):
     def contains_meta(self, plugin_src: Path) -> bool: ...

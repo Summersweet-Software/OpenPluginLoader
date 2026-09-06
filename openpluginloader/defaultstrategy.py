@@ -124,7 +124,7 @@ class DefaultPluginArchiver:
     def archive_plugin(
         self, meta: PluginMetadata, src: Path, destination: Path
     ) -> Path:
-        includes = []
+        includes: list[str] = []
         exclude_paths = [".venv/*", ".env/*"]
 
         # if destination path exists inside of src path, we should
@@ -145,7 +145,13 @@ class DefaultPluginArchiver:
                     else:
                         src = src / new_src
 
-        include_dists = get_recursive_includes(includes)
+        include_dists = []
+        seen_dist_names = set()
+        for include in get_recursive_includes(includes):
+            if include.name in include_dists:
+                continue
+            seen_dist_names.add(include.name)
+            include_dists.append(include)
 
         final_path = destination / f"{meta.plugin_id}.{self.extension}"
 
@@ -154,16 +160,12 @@ class DefaultPluginArchiver:
             os.remove(final_path)
 
         with tarfile.open(final_path, "x:gz") as output_file:
-            included_files = []
             self.log("Adding Include Packages:")
             # add files from includes
             for dist in include_dists:
                 self.log(f"- {dist.name}=={dist.version}")
                 # Add every file into tarfile's site-packages.
                 for dist_file in get_distribution_paths(dist):
-                    if dist_file in included_files:
-                        continue
-                    included_files.append(dist_file)
                     output_file.add(
                         dist_file.locate(), f"site-packages/{str(dist_file)}"
                     )
@@ -421,7 +423,7 @@ class TarGzPluginImportHook:
             return self.plugins_module
 
         if not fullname.startswith("plugins."):
-            return
+            return None
 
         fullname_parts = fullname.split(".")
         plugin_name = fullname_parts[1]
@@ -434,7 +436,7 @@ class TarGzPluginImportHook:
             corrosponding_plugin = plugin
 
         if corrosponding_plugin is None:
-            return
+            return None
 
         # Use plugin entry when trying to import `__ENTRY__`
         if len(fullname_parts) >= 3 and fullname_parts[2] == "__ENTRY__":
