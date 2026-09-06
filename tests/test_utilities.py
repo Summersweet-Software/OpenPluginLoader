@@ -211,14 +211,14 @@ def test_find_plugin_from_list__not_exists():
 
 
 def test_generate_dependency_list__non_recursive():
-    expected = [plugins[2]]
+    expected = {plugins[2]}
     dependencies = utility.generate_dependency_list(plugins[1], plugins)
 
     assert expected == dependencies
 
 
 def test_generate_dependency_list__recursive():
-    expected = [plugins[0], plugins[1], plugins[2]]
+    expected = {plugins[0], plugins[1], plugins[2]}
     dependencies = utility.generate_dependency_list(plugins[3], plugins)
 
     assert expected == dependencies
@@ -228,7 +228,7 @@ def test_generate_dependents_list():
     expected = {plugins[0].plugin_id, plugins[1].plugin_id, plugins[3].plugin_id}
     dependencies = {
         plugin.plugin_id
-        for plugin in utility.generate_dependents_list(plugins[2].plugin_id, plugins)
+        for plugin in utility.generate_dependents_list(plugins[2], plugins)
     }
 
     assert expected == dependencies
@@ -237,24 +237,21 @@ def test_generate_dependents_list():
 def test_create_dependent_dict():
     expected = {
         plugins[0].plugin_id: {
-            plugins[3].plugin_id,
+            plugins[3],
         },
         plugins[1].plugin_id: {
-            plugins[0].plugin_id,
-            plugins[3].plugin_id,
+            plugins[0],
+            plugins[3],
         },
         plugins[2].plugin_id: {
-            plugins[0].plugin_id,
-            plugins[1].plugin_id,
-            plugins[3].plugin_id,
+            plugins[0],
+            plugins[1],
+            plugins[3],
         },
         plugins[3].plugin_id: set(),
     }
 
-    dependencies = {
-        name: {depend.plugin_id for depend in depends}
-        for name, depends in utility.create_dependent_dict(plugins).items()
-    }
+    dependencies = utility.create_dependent_dict(plugins)
 
     assert expected == dependencies
 

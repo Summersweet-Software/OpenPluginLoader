@@ -124,7 +124,7 @@ class DefaultPluginArchiver:
     def archive_plugin(
         self, meta: PluginMetadata, src: Path, destination: Path
     ) -> Path:
-        includes = []
+        includes: list[str] = []
         exclude_paths = [".venv/*", ".env/*"]
 
         # if destination path exists inside of src path, we should
@@ -421,7 +421,7 @@ class TarGzPluginImportHook:
             return self.plugins_module
 
         if not fullname.startswith("plugins."):
-            return
+            return None
 
         fullname_parts = fullname.split(".")
         plugin_name = fullname_parts[1]
@@ -434,7 +434,7 @@ class TarGzPluginImportHook:
             corrosponding_plugin = plugin
 
         if corrosponding_plugin is None:
-            return
+            return None
 
         # Use plugin entry when trying to import `__ENTRY__`
         if len(fullname_parts) >= 3 and fullname_parts[2] == "__ENTRY__":

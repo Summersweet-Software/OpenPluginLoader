@@ -144,31 +144,31 @@ class CircularDependencyError(DependencyError):
 
 # TODO: Implement caching
 def generate_dependency_list(
-    plugin: PluginMetadata, plugins: list[PluginMetadata], seen: list[str] | None = None
-) -> list[PluginMetadata]:
+    plugin: PluginMetadata,
+    plugins: list[PluginMetadata],
+    seen: set[PluginMetadata] | None = None,
+) -> set[PluginMetadata]:
     """Generates a recursive dependency list. Gets dependencies of dependencies
     etc. etc."""
 
     if seen is None:
-        seen = [plugin.plugin_id]
-    elif plugin.plugin_id in seen:
+        seen = {plugin}
+    elif plugin in seen:
         raise CircularDependencyError(
             f"Circular dependency found while generating dependencies for: {plugin.plugin_id}"
         )
     else:
         # needs to make a new "seen list" (otherwise bad times will occur)
-        seen = [*seen, plugin.plugin_id]
+        seen = {*seen, plugin}
 
-    dependencies = []
+    dependencies: set[PluginMetadata] = set()
 
     for dep in plugin.dependencies:
         dep_plugin = find_plugin_from_list(dep.plugin_id, plugins)
         if dep_plugin is None:
             raise DependencyMissingError(f"Could not find plugin: {dep.plugin_id}")
         # check if plugin was already added
-        if any(
-            dep_plugin.plugin_id == dependency.plugin_id for dependency in dependencies
-        ):
+        if dep_plugin in dependencies:
             continue
         if dep_plugin.plugin_version < dep.min_version:
             raise DependencyOutOfDate(
@@ -182,40 +182,33 @@ def generate_dependency_list(
                 f" {dep.max_version} or lower. {dep.plugin_id} is "
                 f"only version {dep_plugin.plugin_version}"
             )
-        dependencies.append(dep_plugin)
+        dependencies.add(dep_plugin)
         sub_dependencies = generate_dependency_list(dep_plugin, plugins, seen)
-        dependencies.extend(
-            sub_depend
-            for sub_depend in sub_dependencies
-            if not any(
-                sub_depend.plugin_id == dependency.plugin_id
-                for dependency in dependencies
-            )  # ensure no duplicates
-        )
+        dependencies.update(sub_dependencies)
 
     return dependencies
 
 
 def generate_dependents_list(
-    plugin_id: str, plugins: list[PluginMetadata]
-) -> list[PluginMetadata]:
+    plugin: PluginMetadata, plugins: list[PluginMetadata]
+) -> set[PluginMetadata]:
     """Generates a list of dependents"""
 
-    output = []
+    output: set[PluginMetadata] = set()
 
-    for plugin in plugins:
-        dependencies = generate_dependency_list(plugin, plugins)
-        if any(dep.plugin_id == plugin_id for dep in dependencies):
-            output.append(plugin)
+    for search_plugin in plugins:
+        dependencies = generate_dependency_list(search_plugin, plugins)
+        if plugin in dependencies:
+            output.add(search_plugin)
 
     return output
 
 
 def create_dependent_dict(
     plugins: list[PluginMetadata],
-) -> dict[str, list[PluginMetadata]]:
+) -> dict[str, set[PluginMetadata]]:
     return {
-        plugin.plugin_id: generate_dependents_list(plugin.plugin_id, plugins)
+        plugin.plugin_id: generate_dependents_list(plugin, plugins)
         for plugin in plugins
     }
 
@@ -230,7 +223,7 @@ def sort_plugins(plugins: list[PluginMetadata]) -> list[PluginMetadata]:
 
     What is this algorithm called? Idk, I didn't go to college. I just
     came up with it on the fly. My best guess after trying to find a name is
-    a "topological sort" but I think that a class of sorting algorithms rather
+    a "topological sort" but I think thats a class of sorting algorithms rather
     than a specific algorithm. Idk.
     """
     output: list[PluginMetadata] = []
@@ -244,7 +237,7 @@ def sort_plugins(plugins: list[PluginMetadata]) -> list[PluginMetadata]:
             # check if our output plugin dependency on the current plugin to
             #   be added- if so, we must place our current plugin AFTER the
             #   one already within the output list
-            if any(plugin.plugin_id == dep.plugin_id for dep in out_dependents):
+            if plugin in out_dependents:
                 output.insert(len(output) - c, plugin)  # place plugin after current one
                 break
         else:
