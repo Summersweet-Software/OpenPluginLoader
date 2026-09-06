@@ -316,17 +316,65 @@ class TarGzImportHook:
         self.tar_file_path = tar_file_path
         self.sub_path = sub_path
 
-    def find_spec(self, fullname: str, path, target=None) -> ModuleSpec | None:
-        fullname_path = self.sub_path / "/".join(fullname.split("."))
+    def _find_spec_folder(
+        self, fullname: str, path: str | None, target=None
+    ) -> ModuleSpec | None:
+        fullname_path = (
+            self.tar_file_path / self.sub_path / "/".join(fullname.split("."))
+        )
+        if fullname_path.absolute().exists() and fullname_path.absolute().is_dir():
+            spec = ModuleSpec(
+                fullname,
+                TarGzPluginLoader(
+                    fullname,
+                    str(fullname_path.absolute()),
+                    self.tar_file_path.absolute(),
+                ),
+                origin=path,
+                is_package=True,
+            )
+
+            spec.has_location = True
+        elif Path(str(fullname_path.absolute()) + ".py").exists():
+            spec = ModuleSpec(
+                fullname,
+                TarGzPluginLoader(
+                    fullname,
+                    str((str(fullname_path.absolute()) + ".py")),
+                    self.tar_file_path.absolute(),
+                ),
+                origin=path,
+                is_package=False,
+            )
+
+            spec.has_location = True
+        else:
+            return None
+        return spec
+
+    def find_spec(
+        self, fullname: str, path: list[str] | None | str, target=None
+    ) -> ModuleSpec | None:
         if isinstance(path, list):
             path = path[0] if len(path) > 0 else None
+
+        if self.tar_file_path.is_file() and tarfile.is_tarfile(self.tar_file_path):
+            return self._find_spec_targz(fullname, path, target)
+        elif self.tar_file_path.is_dir():
+            return self._find_spec_folder(fullname, path, target)
+        return None
+
+    def _find_spec_targz(
+        self, fullname: str, path: str | None, target=None
+    ) -> ModuleSpec | None:
+        fullname_path = self.sub_path / "/".join(fullname.split("."))
 
         with tarfile.open(self.tar_file_path, "r:gz") as f:
             names = f.getnames()
             if any(Path(name).is_relative_to(fullname_path) for name in names):
                 spec = ModuleSpec(
                     fullname,
-                    TarGzLoader(
+                    TarGzPluginLoader(
                         fullname,
                         str(self.tar_file_path / fullname_path),
                         self.tar_file_path,
@@ -339,7 +387,7 @@ class TarGzImportHook:
             elif (str(fullname_path).replace("\\", "/") + ".py") in names:
                 spec = ModuleSpec(
                     fullname,
-                    TarGzLoader(
+                    TarGzPluginLoader(
                         fullname,
                         str(self.tar_file_path / (str(fullname_path) + ".py")),
                         self.tar_file_path,
