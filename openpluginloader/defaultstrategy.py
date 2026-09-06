@@ -282,8 +282,10 @@ class TarGzPluginLoader(TarGzLoader):
         with clear_module_caches(DEFAULT_MODS):
             with set_meta_paths(
                 [
-                    TarGzImportHook(self.tar_file_path, Path("site-packages")),
-                    TarGzImportHook(self.tar_file_path, Path()),
+                    TarGZPluginFileImportHook(
+                        self.tar_file_path, Path("site-packages")
+                    ),
+                    TarGZPluginFileImportHook(self.tar_file_path, Path()),
                     *(
                         metapath
                         for metapath in sys.meta_path
@@ -316,6 +318,20 @@ class TarGzImportHook:
         self.tar_file_path = tar_file_path
         self.sub_path = sub_path
 
+    def make_module_spec(
+        self, fullname: str, file_path: str, path: str | None, is_package: bool
+    ):
+        return ModuleSpec(
+            fullname,
+            TarGzLoader(
+                fullname,
+                file_path,
+                self.tar_file_path,
+            ),
+            origin=path,
+            is_package=is_package,
+        )
+
     def _find_spec_folder(
         self, fullname: str, path: str | None, target=None
     ) -> ModuleSpec | None:
@@ -323,28 +339,14 @@ class TarGzImportHook:
             self.tar_file_path / self.sub_path / "/".join(fullname.split("."))
         )
         if fullname_path.absolute().exists() and fullname_path.absolute().is_dir():
-            spec = ModuleSpec(
-                fullname,
-                TarGzPluginLoader(
-                    fullname,
-                    str(fullname_path.absolute()),
-                    self.tar_file_path.absolute(),
-                ),
-                origin=path,
-                is_package=True,
+            spec = self.make_module_spec(
+                fullname, str(fullname_path.absolute()), path, True
             )
 
             spec.has_location = True
         elif Path(str(fullname_path.absolute()) + ".py").exists():
-            spec = ModuleSpec(
-                fullname,
-                TarGzPluginLoader(
-                    fullname,
-                    str((str(fullname_path.absolute()) + ".py")),
-                    self.tar_file_path.absolute(),
-                ),
-                origin=path,
-                is_package=False,
+            spec = self.make_module_spec(
+                fullname, str((str(fullname_path.absolute()) + ".py")), path, False
             )
 
             spec.has_location = True
@@ -372,28 +374,17 @@ class TarGzImportHook:
         with tarfile.open(self.tar_file_path, "r:gz") as f:
             names = f.getnames()
             if any(Path(name).is_relative_to(fullname_path) for name in names):
-                spec = ModuleSpec(
-                    fullname,
-                    TarGzPluginLoader(
-                        fullname,
-                        str(self.tar_file_path / fullname_path),
-                        self.tar_file_path,
-                    ),
-                    origin=path,
-                    is_package=True,
+                spec = self.make_module_spec(
+                    fullname, str(self.tar_file_path / fullname_path), path, True
                 )
 
                 spec.has_location = True
             elif (str(fullname_path).replace("\\", "/") + ".py") in names:
-                spec = ModuleSpec(
+                spec = self.make_module_spec(
                     fullname,
-                    TarGzPluginLoader(
-                        fullname,
-                        str(self.tar_file_path / (str(fullname_path) + ".py")),
-                        self.tar_file_path,
-                    ),
-                    origin=path,
-                    is_package=False,
+                    str(self.tar_file_path / (str(fullname_path) + ".py")),
+                    path,
+                    False,
                 )
 
                 spec.has_location = True
@@ -402,7 +393,29 @@ class TarGzImportHook:
             return spec
 
 
-class TarGzPluginImportHook:
+class TarGZPluginFileImportHook(TarGzImportHook):
+    """Actually in charge of loading individual files inside of a plugin."""
+
+    def make_module_spec(
+        self,
+        fullname: str,
+        file_path: str,
+        path: str | None,
+        is_package: bool,
+    ):
+        return ModuleSpec(
+            fullname,
+            TarGzPluginLoader(
+                fullname,
+                file_path,
+                self.tar_file_path,
+            ),
+            origin=path,
+            is_package=is_package,
+        )
+
+
+class DefaultPluginImportHook:
     """An import hook that interprets any modules prefixed as `plugin.<plugin-name>` as
     a plugin within whatever plugin path is being used
     """
@@ -434,12 +447,6 @@ class TarGzPluginImportHook:
                 str(plugin_path.absolute())
             )
         self.plugins_module.has_location = True
-
-    def find_module(
-        self,
-        fullname,
-        path,
-    ): ...
 
     def create_plugin_module(
         self, plugin_meta: PluginMetadata, fullname: str
@@ -537,7 +544,7 @@ def create_default_manager(
         plugin_scanner=scanner,
         api_version=api_version,
         import_hooks=[
-            TarGzPluginImportHook(
+            DefaultPluginImportHook(
                 plugin_path, scanner.get_available_plugins(api_version)
             ),
         ],
@@ -558,5 +565,5 @@ __all__ = [
     "PluginFolderLoader",
     # # finders
     "TarGzImportHook",
-    "TarGzPluginImportHook",
+    "DefaultPluginImportHook",
 ]
