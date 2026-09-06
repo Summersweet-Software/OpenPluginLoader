@@ -14,8 +14,8 @@ DEFAULT_DEST = Path(os.getcwd()) / "build"
 
 def archive_plugin():
     """Builds a plugin into a targz"""
-    src = CWD if len(sys.argv) < 1 else Path(sys.argv[0])
-    dest = DEFAULT_DEST if len(sys.argv) < 2 else Path(sys.argv[1])
+    src = CWD if len(sys.argv) < 1 else CWD / sys.argv[0]
+    dest = DEFAULT_DEST if len(sys.argv) < 2 else CWD / sys.argv[1]
 
     meta_loader = DefaultMetadataLoader()
     archiver = DefaultPluginArchiver()
