@@ -103,10 +103,10 @@ class PluginManager:
 
         Important: Ensure you run `.initialize_hooks()` first
         """
-        if plugin.min_api_version < self.api_version:
-            raise PluginOutOfDate(plugin, self.api_version)
-        if plugin.max_api_version > self.api_version:
-            raise PluginTooNew(plugin, self.api_version)
+        if plugin.min_api_version > self.api_version:
+            raise PluginOutOfDate(plugin, self.api_version, plugin.min_api_version)
+        if plugin.max_api_version < self.api_version:
+            raise PluginTooNew(plugin, self.api_version, plugin.max_api_version)
 
         return self.loading_strategy.load_plugin(plugin)
 

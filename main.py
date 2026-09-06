@@ -74,7 +74,7 @@ API_VERSION = ApiVersion(1, 0, 0, None)
 
 
 if __name__ == "__main__":
-    manager = create_default_manager(API_VERSION, Path("example/exampleplugin/build/"))
+    manager = create_default_manager(API_VERSION, Path("example/plugins/"))
     manager.initialize_hooks()
 
     plugin_src = Path("example/exampleplugin")
@@ -105,4 +105,4 @@ if __name__ == "__main__":
     print(sort_plugins(plugins))
     print()
 
-    # manager.load_all_plugins()
+    manager.load_all_plugins()
