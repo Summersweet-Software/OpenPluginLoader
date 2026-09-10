@@ -72,7 +72,7 @@ but it does also mean to possibility for more spelling errors or small typos in 
 Summersweet Software
 **********************
 
-Summersweet software is a workers cooperative built on the idea of bringing power back to the people.
+Summersweet Software is a workers cooperative built on the idea of bringing power back to the people.
 We want software to be something that doesn't exploit but rather empowers developers and users alike.
 This is why this library is released for free.
 

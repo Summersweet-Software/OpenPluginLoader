@@ -1,4 +1,4 @@
-[![](https://img.shields.io/github/license/summersweet-software/OpenPluginLoader)](https://github.com/Summersweet-Software/OpenPluginLoader?tab=MIT-1-ov-file) [![Read the Docs](https://img.shields.io/readthedocs/openpluginloader)](openpluginloader.readthedocs.io/en/latest/) [![PyPI Downloads](https://img.shields.io/pypi/dm/openpluginloader)](https://pypi.org/project/openpluginloader/) [![GitHub Sponsors](https://img.shields.io/github/sponsors/summersweet-software)](https://github.com/sponsors/Summersweet-Software)
+[![](https://img.shields.io/github/license/summersweet-software/OpenPluginLoader)](https://github.com/Summersweet-Software/OpenPluginLoader?tab=MIT-1-ov-file) [![Read the Docs](https://img.shields.io/readthedocs/openpluginloader)](https://openpluginloader.readthedocs.io/en/latest/) [![PyPI Downloads](https://img.shields.io/pypi/dm/openpluginloader)](https://pypi.org/project/openpluginloader/) [![GitHub Sponsors](https://img.shields.io/github/sponsors/summersweet-software)](https://github.com/sponsors/Summersweet-Software)
 
 # Open Plugin Loader
 
