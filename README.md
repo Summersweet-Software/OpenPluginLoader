@@ -1,3 +1,5 @@
+[![](https://img.shields.io/github/license/summersweet-software/OpenPluginLoader)](https://github.com/Summersweet-Software/OpenPluginLoader?tab=MIT-1-ov-file) [![Read the Docs](https://img.shields.io/readthedocs/openpluginloader)](openpluginloader.readthedocs.io/en/latest/) [![PyPI Downloads](https://img.shields.io/pypi/dm/openpluginloader)](https://pypi.org/project/openpluginloader/) [![GitHub Sponsors](https://img.shields.io/github/sponsors/summersweet-software)](https://github.com/sponsors/Summersweet-Software)
+
 # Open Plugin Loader
 
 An MIT LICENSE library made to make packaging and loading of plugins easy for projects.
@@ -14,14 +16,17 @@ OPL is not going to help you make your plugin api itself, but it will make your 
 - Plugin Manager using the strategy pattern. Change any individual component to suite your needs.
 
 ## Features Not Provided
+
 - Sandboxed loading strategy. Sandbox security is not our expertise. I would rather we provide only what we can reasonable ensure the quality of.
 
 ## Planned Features
+
 - [ ] Plugin Signing
 
 # Getting Started: Making a Plugin (Default Strategy):
 
 Making a plugin is fairly simple. A plugin has a few basic parts:
+
 - A `pyproject.toml` (optional)
 - A `plugin.toml`
 - A plugin entry point (default `__init__.py`, can be modified in your `plugin.toml`)
@@ -74,12 +79,12 @@ dependencies = [
 ```
 
 ## main.py (our entry in this example)
+
 ```
 # Whatever you want here!
 
 print("Holy moly, we loaded it!")
 ```
-
 
 ## Final structure
 
@@ -101,24 +106,25 @@ exampleplugin/
 └── uv.lock
 ```
 
-
 > [!TIP]
 > When we lay it out like this, its easy to see why we should modify the `src` option
 > in our `pyproject.toml`
 
 ## Packaging Our Plugin:
+
 This heavily depends on your loading strategy, but there is a generic command provided.
 It uses the default strategy.
 
 ```sh
 uv run build-plugin ./ ./build
-#                   ^     ^ 
+#                   ^     ^
 #                   |     | - build/output directory
 #                   |
 #                   | - src directory (gets modified if a pyproject is present in that folder)
 ```
 
 ### Alternatively: We Can Make a Build Script.
+
 This should mostly be provided by the plugin api you are using or create, but for testing we can also just build out our own.
 
 ```python
@@ -138,6 +144,7 @@ archiver.archive_plugin(meta, src, dest)
 # Getting Started: Loading plugins (Default Strategy):
 
 ### Project structure
+
 ```
 ourproject/
 ├── .venv/ # our virtual environment during development
@@ -167,7 +174,7 @@ from openpluginloader.utility import set_default_module_cache
 
 from pathlib import Path
 
-import ourproject # import our api. 
+import ourproject # import our api.
 
 # makes our current imports available to plugins. VERY IMPORTANT
 set_default_module_cache()
@@ -184,6 +191,7 @@ manager.load_all_plugins()
 ```
 
 ## Loading individual plugins:
+
 ```python
 from openpluginloader.defaultstrategy import create_default_manager
 from openpluginloader.versioning import ApiVersion
@@ -191,7 +199,7 @@ from openpluginloader.utility import set_default_module_cache
 
 from pathlib import Path
 
-import ourproject # import our api. 
+import ourproject # import our api.
 
 # makes our current imports available to plugins. VERY IMPORTANT
 set_default_module_cache()
