@@ -63,7 +63,13 @@ Issues = "https://github.com/summersweet-software/openpluginloader/issues"
 # Documentation = "https://openpluginloader.readthedocs.io/en/"
 
 [dependency-groups]
-dev = ["mypy>=1.19.1", "pytest>=9.0.2"]
+dev = [
+    "mypy>=1.19.1",
+    "pytest>=9.0.2",
+    "sphinx",
+    "sphinx-autobuild",
+    "sphinx-rtd-theme",
+]
 
 [[tool.uv.index]]
 name = "testpypi"

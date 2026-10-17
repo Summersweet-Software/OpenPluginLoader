@@ -4,13 +4,14 @@ from contextlib import contextmanager
 import importlib.metadata
 import sys
 from types import ModuleType
+from typing import Final
 
 from packaging.requirements import Requirement
 
 from openpluginloader.metadata import PluginLoadError, PluginMetadata
 
 # current module cache
-DEFAULT_MODS = {**sys.modules}
+DEFAULT_MODS: Final = {**sys.modules}
 
 
 def set_default_module_cache():
