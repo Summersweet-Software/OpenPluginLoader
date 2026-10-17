@@ -98,7 +98,6 @@ products too. Thats actually why OPL exists today!
     :caption: api-reference
     :hidden:
 
-
     api_docs/utility.rst
     api_docs/pluginmetadata.rst
     api_docs/apiversion.rst

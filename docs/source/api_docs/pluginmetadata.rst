@@ -3,6 +3,8 @@ Plugin Metadata
 
 .. py:currentmodule:: openpluginloader.metadata
 
+Dataclasses
+------------
 
 .. py:class:: PluginDependency(plugin_id: str, min_version: ApiVersion, max_version: ApiVersion)
 
@@ -81,6 +83,29 @@ Plugin Metadata
 
         hashes the plugin by using its id. Does not take into account any other metadata.
 
+Protocols
+----------
+
+.. py:class:: PluginMetadataLoader(Protocol)
+
+    A generic protocol for classes responsible for loading metadata from plugins.
+
+    .. py:method:: contains_meta(self, plugin_src: Path) -> bool
+
+        Returns whether or not the plugin at the specified source path contains metadata able to be loaded.
+
+    .. py:method:: load_metadata(self, plugin_src: Path, api_version: ApiVersion) -> PluginMetadata
+
+        A method for loading plugin metadata. Returns the result.
+
+        :param ApiVersion api_version: The api version of current plugin api. Used when verifying if the plugin can be loaded.
+        :param Path plugin_src: The path to the plugin we are trying to load the metadata of. 
+
+Exceptions
+-----------
+
 .. py:exception:: PluginLoadError(Exception)
 
     A generic error class representing a loading errors.
+
+

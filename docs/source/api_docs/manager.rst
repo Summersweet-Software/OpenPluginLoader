@@ -79,19 +79,3 @@ Plugin Manager
         :type: bool
 
         A boolean telling you if all the hooks have been initialized.
-
-----
-
-.. py:class:: PluginMetadataLoader(Protocol)
-
-    A strategy to load metadata from a plugin.
-
-    .. py:function:: contains_meta(self, plugin_src: Path) -> bool
-
-        A function to determine if a specific plugin file/path includes a metadata file
-
-    .. py:function:: load_metadata(self, plugin_src: Path, api_version: ApiVersion) -> bool
-
-        Loads the metadata from a plugin file/path. Api version of the plugin manager/api is provided for any validation.
-
-        
