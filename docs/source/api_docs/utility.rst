@@ -7,12 +7,17 @@ Utility
 This module contains useful context managers and utility functions for dealing
 with plugin dependencies or the general import environment.
 
+Globals
+---------
 
 .. py:data:: DEFAULT_MODS
     :type: dict[str, ModuleType]
 
     A dictionary representing the default module cache. Think of this as what
     modules will be available to plugins despite, generally, being inaccessible.
+
+Functions
+-----------
 
 .. py:function:: set_default_module_cache() -> None
 
@@ -79,7 +84,8 @@ with plugin dependencies or the general import environment.
         immediately be added after that dependency and the algorithm will move
         onto the next plugin in need of adding to our output.
 
-----
+Exceptions
+------------
 
 .. py:exception:: DependencyError(PluginLoadError)
 

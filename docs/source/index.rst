@@ -114,7 +114,6 @@ products too. Thats actually why OPL exists today!
     :hidden:
 
     default_strategy/index.rst
-    default_strategy/basics.rst
     default_strategy/import_hooks.rst
 
 

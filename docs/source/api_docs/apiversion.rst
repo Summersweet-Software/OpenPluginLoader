@@ -7,6 +7,9 @@ class itself as well as several utility functions for loading versions.
 .. py:currentmodule:: openpluginloader.versioning
 
 
+Dataclasses
+-------------
+
 .. py:class:: ApiVersion(major: int, minor: int, patch: int | None, tag: str | None)
 
     A :py:class:`NamedTuple` representing a version. Formatted using `Semantic Versioning <https://semver.org/>`_.
@@ -55,7 +58,8 @@ class itself as well as several utility functions for loading versions.
 
 
 
-----
+Parsing Functions
+-------------------
 
 
 .. py:function:: parse_string_api_version(version: str) -> ApiVersion
@@ -84,7 +88,9 @@ class itself as well as several utility functions for loading versions.
 
     :raises VersionTupleFormatError: When the formatting is incorrect
 
-----
+
+Type Aliases
+--------------
 
 
 .. py:type:: VersionDict
@@ -93,7 +99,9 @@ class itself as well as several utility functions for loading versions.
 .. py:type:: VersionTuple
     :canonical: tuple[int, int] | tuple[int, int, int | None] | tuple[int, int, int | None, str | None] | tuple
 
-----
+
+Exceptions
+------------
 
 
 .. py:exception:: VersionFormatError(ValueError)
