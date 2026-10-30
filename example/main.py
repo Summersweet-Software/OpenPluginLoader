@@ -28,6 +28,12 @@ plugin_manager.initialize_hooks()
 plugin_manager.discover_plugins()
 plugin_manager.load_all_plugins()
 
+print()
+print("=====================")
+print("PLUGINS LOADED")
+print("=====================")
+print()
+
 
 for obj in exampleapi.EXAMPLE_THINGS:
     obj.foo()

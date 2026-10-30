@@ -1,14 +1,11 @@
 from pathlib import Path
 import sys
 
-from openpluginloader.archiving import PluginArchiver
-from openpluginloader.loader import PluginLoader
 from openpluginloader.metadata import (
     PluginLoadError,
-    PluginMetadata,
-    PluginMetadataLoader,
 )
-from openpluginloader.scanner import PluginScanner
+from openpluginloader.scanner import Plugin, PluginScanner
+from openpluginloader.utility import sort_plugins
 from openpluginloader.versioning import ApiVersion
 
 
@@ -26,24 +23,17 @@ class PluginManager:
     """
 
     __slots__ = (
-        "metadata_loader",
-        "loading_strategy",
-        "archiver",
-        "plugin_scanner",
+        "plugin_scanners",
         "api_version",
         "import_hooks",
         "known_plugins",
         "_hooks_are_initialized",
     )
 
-    metadata_loader: PluginMetadataLoader
-    """Controls how metadata is loaded"""
-    loading_strategy: PluginLoader
-    """Determines what happens when a plugin actually gets loaded."""
-    archiver: PluginArchiver
-    """Determines how plugins get archived."""
-    plugin_scanner: PluginScanner
-    """Determines how plugins are discovered/located."""
+    plugin_scanners: list[PluginScanner]
+    """Determines how plugins are discovered/located.
+    Also responsible for attributing loaders to plugins."""
+
     api_version: ApiVersion
     """The current api version of your plugin api."""
     import_hooks: list
@@ -51,22 +41,16 @@ class PluginManager:
     loaded"""
     _hooks_are_initialized: bool
 
-    known_plugins: list[PluginMetadata]
+    known_plugins: list[Plugin]
 
     def __init__(
         self,
         *,
-        metadata_loader: PluginMetadataLoader,
-        loading_strategy: PluginLoader,
-        archiver: PluginArchiver,
-        plugin_scanner: PluginScanner,
+        plugin_scanners: list[PluginScanner],
         api_version: ApiVersion,
         import_hooks: list,
     ):
-        self.metadata_loader = metadata_loader
-        self.loading_strategy = loading_strategy
-        self.archiver = archiver
-        self.plugin_scanner = plugin_scanner
+        self.plugin_scanners = plugin_scanners
         self.api_version = api_version
         self.import_hooks = import_hooks
         self._hooks_are_initialized = False
@@ -99,17 +83,21 @@ class PluginManager:
 
         self._hooks_are_initialized = False
 
-    def load_plugin(self, plugin: PluginMetadata):
+    def load_plugin(self, plugin: Plugin):
         """Dynamically load an individual plugin
 
         Important: Ensure you run `.initialize_hooks()` first
         """
-        if plugin.min_api_version > self.api_version:
-            raise PluginTooNew(plugin, self.api_version, plugin.min_api_version)
-        if plugin.max_api_version < self.api_version:
-            raise PluginOutOfDate(plugin, self.api_version, plugin.max_api_version)
+        if plugin.metadata.min_api_version > self.api_version:
+            raise PluginTooNew(
+                plugin, self.api_version, plugin.metadata.min_api_version
+            )
+        if plugin.metadata.max_api_version < self.api_version:
+            raise PluginOutOfDate(
+                plugin, self.api_version, plugin.metadata.max_api_version
+            )
 
-        return self.loading_strategy.load_plugin(plugin)
+        return plugin.loader.load_plugin(plugin)
 
     def load_all_plugins(self):
         """Load all plugins dynamically.
@@ -119,14 +107,35 @@ class PluginManager:
         for plugin in self.known_plugins:
             self.load_plugin(plugin)
 
-    def discover_plugins(self) -> list[PluginMetadata]:
-        plugins = self.plugin_scanner.get_available_plugins(self.api_version)
-        self.known_plugins = self.loading_strategy.sort_plugins_by_load_order(plugins)
+    def discover_plugins(self) -> list[Plugin]:
+        plugins = list(
+            {
+                plugin
+                for scanner in self.plugin_scanners
+                for plugin in scanner.get_available_plugins(self.api_version)
+            }
+        )
+        self.known_plugins = sort_plugins(plugins)
         return self.known_plugins
 
+    def _get_plugin(self, src: Path) -> Plugin | None:
+        """Finds a single plugin without discovering all plugins"""
+        for scanner in self.plugin_scanners:
+            if (out := scanner.get_plugin(src, self.api_version)) is not None:
+                return out
+        return None
+
+    def get_plugin_by_name(self, name: str) -> Plugin | None:
+        for plugin in self.known_plugins:
+            if plugin.metadata.name == name:
+                return plugin
+        return None
+
     def archive_plugin(self, src: Path, dest: Path) -> Path:
-        meta = self.metadata_loader.load_metadata(src, self.api_version)
-        return self.archiver.archive_plugin(meta, src, dest)
+        plugin = self._get_plugin(src)
+        if plugin is None:
+            raise ValueError("Plugin could not be found at the specified source path.")
+        return plugin.archiver.archive_plugin(plugin.metadata, src, dest)
 
 
 __all__ = ["PluginManager", "PluginOutOfDate", "PluginTooNew"]
