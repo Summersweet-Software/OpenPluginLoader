@@ -77,6 +77,9 @@ class PluginModuleLoaderShim(FileLoader):
                             is BuiltinImporter  # add builtins importer (allows you to import things like "math")
                             or isinstance(
                                 metapath, DefaultPluginLoadTimeImportHook
+                            )  # ensure you can still do imports of local packages
+                            or isinstance(
+                                metapath, DefaultGlobalPluginImportHook
                             )  # ensure you can still do plugin imports.
                         ),
                     ]

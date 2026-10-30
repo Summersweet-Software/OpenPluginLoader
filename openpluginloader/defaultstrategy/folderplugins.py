@@ -120,7 +120,9 @@ class FolderPluginMetadataLoader(PluginMetadataLoader):
             ),
             dependencies=[
                 PluginDependency(
-                    dep["plugin_id"], dep["min_version"], dep["max_version"]
+                    dep["plugin_id"],
+                    parse_api_version(dep["min_version"]),
+                    parse_api_version(dep["max_version"]),
                 )
                 for dep in table.get("dependencies", [])
             ],
@@ -223,14 +225,18 @@ class FolderModuleLoader(FileLoader):
     def get_dunder_init_data(self, path: str) -> bytes:
         """Get __init__.py file to be run for packages."""
         file_path = path + "/__init__.py"
-        if not os.path.exists(file_path) or not os.path.isdir(file_path):
+        if not os.path.exists(file_path) or not os.path.isfile(file_path):
             return b""
 
         with open(file_path, "rb") as f:
             return f.read()
 
     def get_data(self, path: str) -> bytes:
-        if not path.endswith(".py"):
+        if (
+            not path.endswith(".py")
+            and os.path.exists(path)
+            and not os.path.isfile(path)
+        ):
             return self.get_dunder_init_data(path)
 
         if not os.path.exists(path) or not os.path.isfile(path):

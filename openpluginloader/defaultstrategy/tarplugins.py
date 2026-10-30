@@ -129,7 +129,9 @@ class ArchivePluginMetadataLoader(PluginMetadataLoader):
             ),
             dependencies=[
                 PluginDependency(
-                    dep["plugin_id"], dep["min_version"], dep["max_version"]
+                    dep["plugin_id"],
+                    parse_api_version(dep["min_version"]),
+                    parse_api_version(dep["max_version"]),
                 )
                 for dep in table.get("dependencies", [])
             ],
@@ -244,19 +246,21 @@ class TarGzModuleLoader(FileLoader):
         """Get archive's `__init__.py` file's contents OR send blank data
         if that file does not exist.
         """
+        path = path.replace("\\", "/")
+
         with tarfile.open(self.tar_file_path, "r:gz") as f:
-            if str(path) + "/__init__.py" not in f.getnames():
+            if path + "/__init__.py" not in f.getnames():
                 return b""
-            fileio = f.extractfile("__init__.py")
+            fileio = f.extractfile(path + "/__init__.py")
             if fileio is None:
                 return b""
             return fileio.read()
 
     def get_data(self, path: str) -> bytes:
-        if not str(path).endswith(".py"):
-            return self.get_dunder_init_data(path)
-
         reparented = Path(path).relative_to(self.tar_file_path)
+        if not str(path).endswith(".py"):
+            return self.get_dunder_init_data(str(reparented))
+
         with tarfile.open(self.tar_file_path, "r:gz") as f:
             if str(reparented).replace("\\", "/") not in f.getnames():
                 raise ImportError(reparented)  # module not found.
