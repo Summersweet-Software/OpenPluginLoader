@@ -247,3 +247,12 @@ class FolderModuleLoader(FileLoader):
 
     def exec_module(self, module: ModuleType):
         return importlib._bootstrap_external.SourceLoader.exec_module(self, module)
+
+
+__all__ = [
+    "FolderPluginScanner",
+    "FolderPluginMetadataLoader",
+    "FolderModuleProvider",
+    "FolderLoadTimeModuleProvider",
+    "FolderModuleLoader",
+]

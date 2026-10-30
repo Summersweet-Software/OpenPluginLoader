@@ -403,3 +403,13 @@ class TarGZLoadTimeModuleProvider(TarGzModuleProvider):
             origin=path,
             is_package=is_package,
         )
+
+
+__all__ = [
+    "TarGZPluginScanner",
+    "ArchivePluginMetadataLoader",
+    "TargzPluginArchiver",
+    "TarGzModuleLoader",
+    "TarGzModuleProvider",
+    "TarGZLoadTimeModuleProvider",
+]

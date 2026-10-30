@@ -204,3 +204,11 @@ class DefaultGlobalPluginImportHook:
         if out is not None:
             out.name = fullname
         return out
+
+
+__all__ = [
+    "PluginFolderLoader",
+    "PluginModuleLoaderShim",
+    "DefaultPluginLoadTimeImportHook",
+    "DefaultGlobalPluginImportHook",
+]

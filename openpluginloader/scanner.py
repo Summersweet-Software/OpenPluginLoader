@@ -49,4 +49,4 @@ class PluginScanner(Protocol):
     def get_available_plugins(self, api_version: ApiVersion) -> list[Plugin]: ...
 
 
-__all__ = ["PluginScanner"]
+__all__ = ["Plugin", "PluginScanner"]

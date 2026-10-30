@@ -1,6 +1,4 @@
 import importlib
-from importlib.abc import FileLoader
-from importlib.machinery import ModuleSpec
 from pathlib import Path
 
 from openpluginloader.defaultstrategy.folderplugins import FolderPluginScanner
@@ -56,3 +54,6 @@ def create_default_manager(
     )  # creates circular reference- not important since the manager has a lifetime as long as the program runtime.
 
     return manager
+
+
+__all__ = ["ImportPluginLoader", "create_default_manager"]
