@@ -1,3 +1,4 @@
+from copy import deepcopy
 import importlib
 from importlib.abc import FileLoader
 from importlib.machinery import BuiltinImporter, ModuleSpec
@@ -64,6 +65,10 @@ class PluginModuleLoaderShim(FileLoader):
 
     def exec_module(self, module: ModuleType):
         importlib.invalidate_caches()
+
+        # EXPENSIVE,
+        #  deepcopy stops malacious plugins from changing their own loading strategies.
+        module.__dict__["__PLUGIN__"] = deepcopy(self.plugin)
 
         with clear_module_caches(DEFAULT_MODS):
             if self.changes_metapaths:
