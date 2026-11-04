@@ -3,7 +3,7 @@ name = "openpluginloader"
 version = "2.0.0"
 description = "A Robust Plugin Loading Library For Large-scale Applications."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = ["packaging>=26.3"]
 
 license = { text = "MIT-only" }
@@ -42,7 +42,6 @@ classifiers = [
 
     # Specify the Python versions you support here.
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "License :: OSI Approved :: MIT License",
