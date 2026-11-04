@@ -249,9 +249,12 @@ class FolderModuleLoader(FileLoader):
         return self.get_data(self.path).decode()
 
     def load_module(self, fullname: str | None = None) -> ModuleType:
-        return importlib._bootstrap._load_module_shim(self, fullname)
+        module = importlib._bootstrap._load_module_shim(self, fullname)
+        module.__PLUGIN_IS_ARCHIVED__ = False
+        return module
 
     def exec_module(self, module: ModuleType):
+        module.__dict__["__PLUGIN_IS_ARCHIVED__"] = False
         return importlib._bootstrap_external.SourceLoader.exec_module(self, module)
 
 

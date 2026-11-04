@@ -273,9 +273,15 @@ class TargzModuleLoader(FileLoader):
         return self.get_data(self.path).decode()
 
     def load_module(self, fullname: str | None = None) -> ModuleType:
-        return importlib._bootstrap._load_module_shim(self, fullname)
+        module = importlib._bootstrap._load_module_shim(self, fullname)
+        module.__PLUGIN_IS_ARCHIVED__ = False
+        module.__PLUGIN_ARCHIVE_PATH__ = self.tar_file_path
+        return module
 
     def exec_module(self, module: ModuleType):
+        module.__dict__["__PLUGIN_IS_ARCHIVED__"] = False
+        module.__dict__["__PLUGIN_ARCHIVE_PATH__"] = self.tar_file_path
+
         return importlib._bootstrap_external.SourceLoader.exec_module(self, module)
 
 
