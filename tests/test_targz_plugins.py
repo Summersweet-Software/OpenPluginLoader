@@ -12,10 +12,10 @@ from openpluginloader.defaultstrategy.importmachinery import (
     DefaultGlobalPluginImportHook,
 )
 from openpluginloader.defaultstrategy.tarplugins import (
-    ArchivePluginMetadataLoader,
-    TarGZLoadTimeModuleProvider,
-    TarGZPluginScanner,
-    TarGzModuleProvider,
+    TargzPluginMetadataLoader,
+    TargzLoadTimeModuleProvider,
+    TargzPluginScanner,
+    TargzModuleProvider,
     TargzPluginArchiver,
 )
 from openpluginloader.manager import PluginManager
@@ -51,10 +51,10 @@ def setup_manager():
     loader = ImportPluginLoader()
     archiver = TargzPluginArchiver(enable_logging=True)
 
-    targz_scanner = TarGZPluginScanner(PLUGIN_PATH, loader, archiver)
+    Targz_scanner = TargzPluginScanner(PLUGIN_PATH, loader, archiver)
 
     manager = PluginManager(
-        plugin_scanners=[targz_scanner],
+        plugin_scanners=[Targz_scanner],
         api_version=API_VERSION,
         import_hooks=[],
     )
@@ -70,7 +70,7 @@ def setup_manager():
 
 
 def test_meta_loader_has_metadata_func():
-    metaloader = ArchivePluginMetadataLoader()
+    metaloader = TargzPluginMetadataLoader()
 
     assert metaloader.contains_meta(PLUGIN_PATH / "Abby.FolderPlugin1.tar.gz") == True
     assert metaloader.contains_meta(PLUGIN_PATH / "Abby.FolderPlugin2.tar.gz") == True
@@ -78,7 +78,7 @@ def test_meta_loader_has_metadata_func():
 
 
 def test_meta_loader_load_metadata_func():
-    metaloader = ArchivePluginMetadataLoader()
+    metaloader = TargzPluginMetadataLoader()
 
     metadata = metaloader.load_metadata(
         PLUGIN_PATH / "Abby.FolderPlugin2.tar.gz", API_VERSION
@@ -133,18 +133,18 @@ def test_scanner():
     assert any(plugin.metadata.name == "FolderPlugin3" for plugin in plugins)
 
     assert all(
-        isinstance(plugin.scanner_source, TarGZPluginScanner) for plugin in plugins
+        isinstance(plugin.scanner_source, TargzPluginScanner) for plugin in plugins
     )
     assert all(
-        isinstance(plugin.metaloader, ArchivePluginMetadataLoader) for plugin in plugins
+        isinstance(plugin.metaloader, TargzPluginMetadataLoader) for plugin in plugins
     )
     assert all(isinstance(plugin.archiver, TargzPluginArchiver) for plugin in plugins)
     assert all(isinstance(plugin.loader, ImportPluginLoader) for plugin in plugins)
     assert all(
-        isinstance(plugin.module_provider, TarGzModuleProvider) for plugin in plugins
+        isinstance(plugin.module_provider, TargzModuleProvider) for plugin in plugins
     )
     assert all(
-        isinstance(plugin.module_loadtime_provider, TarGZLoadTimeModuleProvider)
+        isinstance(plugin.module_loadtime_provider, TargzLoadTimeModuleProvider)
         for plugin in plugins
     )
 
