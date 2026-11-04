@@ -105,6 +105,7 @@ products too. Thats actually why OPL exists today!
     api_docs/loader.rst
     api_docs/pluginscanner.rst
     api_docs/pluginarchiving.rst
+    api_docs/moduleprovider.rst
 
 
 .. toctree::
@@ -114,7 +115,9 @@ products too. Thats actually why OPL exists today!
     :hidden:
 
     default_strategy/index.rst
-    default_strategy/import_hooks.rst
+    default_strategy/import_machinery.rst
+    default_strategy/tarplugins.rst
+    default_strategy/folderplugins.rst
 
 
 Indices and tables

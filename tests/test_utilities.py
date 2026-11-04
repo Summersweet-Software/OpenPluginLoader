@@ -2,10 +2,12 @@ import importlib
 import importlib.metadata
 from pathlib import Path
 import sys
+import tests.common as common
 
 from openpluginloader import utility
 from openpluginloader.metadata import PluginDependency, PluginMetadata
 from openpluginloader.versioning import parse_api_version
+from openpluginloader.scanner import Plugin
 
 
 def test_set_default_module_cache():
@@ -103,64 +105,96 @@ def test_get_recursive_includes__pytest():
 
 
 plugins = [
-    PluginMetadata(
-        author="JoshKatz",
-        name="A",
-        entry="",
-        src_path=Path(),
-        plugin_version=parse_api_version("0.1.0"),
-        min_api_version=parse_api_version("0.1.0"),
-        max_api_version=parse_api_version("0.1.0"),
-        dependencies=[
-            PluginDependency(
-                "JoshKatz.B", parse_api_version("0.1.0"), parse_api_version("0.1.0")
-            ),
-            PluginDependency(
-                "JoshKatz.C", parse_api_version("0.1.0"), parse_api_version("0.1.0")
-            ),
-        ],
-        aditional_meta={},
+    Plugin(
+        PluginMetadata(
+            author="JoshKatz",
+            name="A",
+            entry="",
+            src_path=Path(),
+            plugin_version=parse_api_version("0.1.0"),
+            min_api_version=parse_api_version("0.1.0"),
+            max_api_version=parse_api_version("0.1.0"),
+            dependencies=[
+                PluginDependency(
+                    "JoshKatz.B", parse_api_version("0.1.0"), parse_api_version("0.1.0")
+                ),
+                PluginDependency(
+                    "JoshKatz.C", parse_api_version("0.1.0"), parse_api_version("0.1.0")
+                ),
+            ],
+            aditional_meta={},
+        ),
+        common.FakeMetaLoader(),
+        common.FakeLoader(),
+        common.FakeArchiver(),
+        common.FakeModuleProvider(),
+        common.FakeModuleProvider(),
+        common.FakeScanner(),
     ),
-    PluginMetadata(
-        author="JoshKatz",
-        name="B",
-        entry="",
-        src_path=Path(),
-        plugin_version=parse_api_version("0.1.0"),
-        min_api_version=parse_api_version("0.1.0"),
-        max_api_version=parse_api_version("0.1.0"),
-        dependencies=[
-            PluginDependency(
-                "JoshKatz.C", parse_api_version("0.1.0"), parse_api_version("0.1.0")
-            ),
-        ],
-        aditional_meta={},
+    Plugin(
+        PluginMetadata(
+            author="JoshKatz",
+            name="B",
+            entry="",
+            src_path=Path(),
+            plugin_version=parse_api_version("0.1.0"),
+            min_api_version=parse_api_version("0.1.0"),
+            max_api_version=parse_api_version("0.1.0"),
+            dependencies=[
+                PluginDependency(
+                    "JoshKatz.C", parse_api_version("0.1.0"), parse_api_version("0.1.0")
+                ),
+            ],
+            aditional_meta={},
+        ),
+        common.FakeMetaLoader(),
+        common.FakeLoader(),
+        common.FakeArchiver(),
+        common.FakeModuleProvider(),
+        common.FakeModuleProvider(),
+        common.FakeScanner(),
     ),
-    PluginMetadata(
-        author="JoshKatz",
-        name="C",
-        entry="",
-        src_path=Path(),
-        plugin_version=parse_api_version("0.1.0"),
-        min_api_version=parse_api_version("0.1.0"),
-        max_api_version=parse_api_version("0.1.0"),
-        dependencies=[],
-        aditional_meta={},
+    Plugin(
+        PluginMetadata(
+            author="JoshKatz",
+            name="C",
+            entry="",
+            src_path=Path(),
+            plugin_version=parse_api_version("0.1.0"),
+            min_api_version=parse_api_version("0.1.0"),
+            max_api_version=parse_api_version("0.1.0"),
+            dependencies=[],
+            aditional_meta={},
+        ),
+        common.FakeMetaLoader(),
+        common.FakeLoader(),
+        common.FakeArchiver(),
+        common.FakeModuleProvider(),
+        common.FakeModuleProvider(),
+        common.FakeScanner(),
     ),
-    PluginMetadata(
-        author="JoshKatz",
-        name="D",
-        entry="",
-        src_path=Path(),
-        plugin_version=parse_api_version("0.1.0"),
-        min_api_version=parse_api_version("0.1.0"),
-        max_api_version=parse_api_version("0.1.0"),
-        dependencies=[
-            PluginDependency(
-                "JoshKatz.A", parse_api_version("0.1.0"), parse_api_version("0.1.0")
-            )
-        ],
-        aditional_meta={},
+    Plugin(
+        PluginMetadata(
+            author="JoshKatz",
+            name="D",
+            entry="",
+            src_path=Path(),
+            plugin_version=parse_api_version("0.1.0"),
+            min_api_version=parse_api_version("0.1.0"),
+            max_api_version=parse_api_version("0.1.0"),
+            dependencies=[
+                PluginDependency(
+                    "JoshKatz.A", parse_api_version("0.1.0"), parse_api_version("0.1.0")
+                )
+            ],
+            aditional_meta={},
+        ),
+        common.FakeMetaLoader(),
+        common.FakeLoader(),
+        common.FakeArchiver(),
+        common.FakeModuleProvider(),
+        common.FakeModuleProvider(),
+        common.FakeScanner(),
     ),
 ]
 
@@ -203,7 +237,9 @@ def test_get_distribution_paths__not_None():
 
 
 def test_find_plugin_from_list__exists():
-    assert plugins[0] == utility.find_plugin_from_list(plugins[0].plugin_id, plugins)
+    assert plugins[0] == utility.find_plugin_from_list(
+        plugins[0].metadata.plugin_id, plugins
+    )
 
 
 def test_find_plugin_from_list__not_exists():
@@ -225,9 +261,13 @@ def test_generate_dependency_list__recursive():
 
 
 def test_generate_dependents_list():
-    expected = {plugins[0].plugin_id, plugins[1].plugin_id, plugins[3].plugin_id}
+    expected = {
+        plugins[0].metadata.plugin_id,
+        plugins[1].metadata.plugin_id,
+        plugins[3].metadata.plugin_id,
+    }
     dependencies = {
-        plugin.plugin_id
+        plugin.metadata.plugin_id
         for plugin in utility.generate_dependents_list(plugins[2], plugins)
     }
 
@@ -236,19 +276,19 @@ def test_generate_dependents_list():
 
 def test_create_dependent_dict():
     expected = {
-        plugins[0].plugin_id: {
+        plugins[0].metadata.plugin_id: {
             plugins[3],
         },
-        plugins[1].plugin_id: {
+        plugins[1].metadata.plugin_id: {
             plugins[0],
             plugins[3],
         },
-        plugins[2].plugin_id: {
+        plugins[2].metadata.plugin_id: {
             plugins[0],
             plugins[1],
             plugins[3],
         },
-        plugins[3].plugin_id: set(),
+        plugins[3].metadata.plugin_id: set(),
     }
 
     dependencies = utility.create_dependent_dict(plugins)

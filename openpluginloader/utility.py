@@ -9,6 +9,7 @@ from typing import Final
 from packaging.requirements import Requirement
 
 from openpluginloader.metadata import PluginLoadError, PluginMetadata
+from openpluginloader.scanner import Plugin
 
 # current module cache
 DEFAULT_MODS: Final = {**sys.modules}
@@ -41,6 +42,7 @@ def add_search_path(path: str):
 @contextmanager
 def set_search_path(new_paths: list[str]):
     """Temporarily set the search path, reset it when the context manager exits"""
+
     old = [*sys.path]
     sys.path.clear()
     sys.path.extend(new_paths)
@@ -63,12 +65,26 @@ def set_meta_paths(hooks: list):
         sys.meta_path.extend(old)
 
 
+# TODO remove
+# @contextmanager
+# def add_meta_path(hook):
+#     old = [*sys.meta_path]
+#     sys.meta_path.append(hook)
+#     try:
+#         yield
+#     finally:
+#         sys.meta_path.clear()
+#         sys.meta_path.extend(old)
+
+
 @contextmanager
 def clear_module_caches(default: dict[str, ModuleType] | None = None):
     """Temporarily clear module caches and return them to their previous state
     after the context manager exits"""
 
     modules = {**sys.modules}
+    # TODO: This function should temporarily clear this module from the module cache.
+    # TODO:  This makes sure plugins can't modify the cache.
 
     sys.modules.clear()
     if default is not None:
@@ -116,11 +132,9 @@ def get_distribution_paths(
     return dist.files
 
 
-def find_plugin_from_list(
-    id: str, plugins: list[PluginMetadata]
-) -> PluginMetadata | None:
+def find_plugin_from_list(id: str, plugins: list[Plugin]) -> Plugin | None:
     for plugin in plugins:
-        if id == plugin.plugin_id:
+        if id == plugin.metadata.plugin_id:
             return plugin
     return None
 
@@ -147,10 +161,10 @@ class CircularDependencyError(DependencyError):
 
 # TODO: Implement caching
 def generate_dependency_list(
-    plugin: PluginMetadata,
-    plugins: list[PluginMetadata],
-    seen: set[PluginMetadata] | None = None,
-) -> set[PluginMetadata]:
+    plugin: Plugin,
+    plugins: list[Plugin],
+    seen: set[Plugin] | None = None,
+) -> set[Plugin]:
     """Generates a recursive dependency list. Gets dependencies of dependencies
     etc. etc."""
 
@@ -158,32 +172,32 @@ def generate_dependency_list(
         seen = {plugin}
     elif plugin in seen:
         raise CircularDependencyError(
-            f"Circular dependency found while generating dependencies for: {plugin.plugin_id}"
+            f"Circular dependency found while generating dependencies for: {plugin.metadata.plugin_id}"
         )
     else:
         # needs to make a new "seen list" (otherwise bad times will occur)
         seen = {*seen, plugin}
 
-    dependencies: set[PluginMetadata] = set()
+    dependencies: set[Plugin] = set()
 
-    for dep in plugin.dependencies:
+    for dep in plugin.metadata.dependencies:
         dep_plugin = find_plugin_from_list(dep.plugin_id, plugins)
         if dep_plugin is None:
             raise DependencyMissingError(f"Could not find plugin: {dep.plugin_id}")
         # check if plugin was already added
         if dep_plugin in dependencies:
             continue
-        if dep_plugin.plugin_version < dep.min_version:
+        if dep_plugin.metadata.plugin_version < dep.min_version:
             raise DependencyOutOfDate(
-                f"{plugin.plugin_id} requires {dep.plugin_id}"
+                f"{plugin.metadata.plugin_id} requires {dep.plugin_id}"
                 f" {dep.min_version} or higher. {dep.plugin_id} is "
-                f"only version {dep_plugin.plugin_version}"
+                f"only version {dep_plugin.metadata.plugin_version}"
             )
-        if dep_plugin.plugin_version > dep.max_version:
+        if dep_plugin.metadata.plugin_version > dep.max_version:
             raise DependencyTooNew(
-                f"{plugin.plugin_id} requires {dep.plugin_id}"
+                f"{plugin.metadata.plugin_id} requires {dep.plugin_id}"
                 f" {dep.max_version} or lower. {dep.plugin_id} is "
-                f"only version {dep_plugin.plugin_version}"
+                f"only version {dep_plugin.metadata.plugin_version}"
             )
         dependencies.add(dep_plugin)
         sub_dependencies = generate_dependency_list(dep_plugin, plugins, seen)
@@ -192,12 +206,10 @@ def generate_dependency_list(
     return dependencies
 
 
-def generate_dependents_list(
-    plugin: PluginMetadata, plugins: list[PluginMetadata]
-) -> set[PluginMetadata]:
+def generate_dependents_list(plugin: Plugin, plugins: list[Plugin]) -> set[Plugin]:
     """Generates a list of dependents"""
 
-    output: set[PluginMetadata] = set()
+    output: set[Plugin] = set()
 
     for search_plugin in plugins:
         dependencies = generate_dependency_list(search_plugin, plugins)
@@ -208,15 +220,15 @@ def generate_dependents_list(
 
 
 def create_dependent_dict(
-    plugins: list[PluginMetadata],
-) -> dict[str, set[PluginMetadata]]:
+    plugins: list[Plugin],
+) -> dict[str, set[Plugin]]:
     return {
-        plugin.plugin_id: generate_dependents_list(plugin, plugins)
+        plugin.metadata.plugin_id: generate_dependents_list(plugin, plugins)
         for plugin in plugins
     }
 
 
-def sort_plugins(plugins: list[PluginMetadata]) -> list[PluginMetadata]:
+def sort_plugins(plugins: list[Plugin]) -> list[Plugin]:
     """Sorts plugins by gradually adding them to our output list.
     Plugins start by being loaded last, gradually we check if they can move
     further up in the load order to let them be loaded sooner. If a plugin is
@@ -229,14 +241,14 @@ def sort_plugins(plugins: list[PluginMetadata]) -> list[PluginMetadata]:
     a "topological sort" but I think thats a class of sorting algorithms rather
     than a specific algorithm. Idk.
     """
-    output: list[PluginMetadata] = []
+    output: list[Plugin] = []
     dependents = create_dependent_dict(plugins)
 
     for plugin in plugins:
         # iterate through output list in reverse order
         #   (starting with plugins that load last)
         for c, out_plugin in enumerate(reversed(output)):
-            out_dependents = dependents[out_plugin.plugin_id]
+            out_dependents = dependents[out_plugin.metadata.plugin_id]
             # check if our output plugin dependency on the current plugin to
             #   be added- if so, we must place our current plugin AFTER the
             #   one already within the output list

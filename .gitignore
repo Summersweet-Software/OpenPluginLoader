@@ -4,3 +4,5 @@ __pycache__/
 example/plugins/*.py
 
 docs/build/
+
+tests/test_plugins/*.tar.gz

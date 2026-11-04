@@ -51,11 +51,11 @@ Functions
 
     Gets the file paths included in a single distribution. Returns an empty list if :py:data:`dist.files` is None.
 
-.. py:function:: find_plugin_from_list(id: str, plugins: list[PluginMetadata])
+.. py:function:: find_plugin_from_list(id: str, plugins: list[Plugin])
 
     Takes a plugin id and finds the corrosponding plugin metadata in a list of plugins.
 
-.. py:function:: generate_dependency_list(plugin: PluginMetadata, plugins: list[PluginMetadata], seen: set[PluginMetadata] | None = None) -> set[PluginMetadata]
+.. py:function:: generate_dependency_list(plugin: Plugin, plugins: list[Plugin], seen: set[Plugin] | None = None) -> set[Plugin]
 
     Generates a recursive dependency list for a single plugin. Gets dependencies of dependencies.
 
@@ -63,15 +63,15 @@ Functions
 
         Don't use the :py:data:`seen` argument. This is simply to avoid infinite recursion.
 
-.. py:function:: generate_dependents_list(plugin: PluginMetadata, plugins: list[PluginMetadata]) -> set[PluginMetadata]
+.. py:function:: generate_dependents_list(plugin: Plugin, plugins: list[Plugin]) -> set[Plugin]
 
     Generates a list of a **dependents** for a single plugin. These are not the same as a dependency list. These are plugins that DEPEND ON the provided plugin.
 
-.. py:function:: create_dependent_dict(plugins: list[PluginMetadata]) -> dict[str, set[PluginMetadata]]
+.. py:function:: create_dependent_dict(plugins: list[Plugin]) -> dict[str, set[Plugin]]
 
     Generates a dictionary containing a mapping between plugin id's and their set of dependent plugins.
 
-.. py:function:: sort_plugins(plugins: list[PluginMetadata]) -> list[PluginMetadata]
+.. py:function:: sort_plugins(plugins: list[Plugin]) -> list[Plugin]
 
     Sorts plugins by load order. Ordering is not preserved for plugins with the same loading order.
 

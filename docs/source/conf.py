@@ -29,3 +29,4 @@ html_logo = "https://github.com/Summersweet-Software/ComprehensiveConfig/blob/ma
 
 
 html_theme_options = {"includehidden": True}
+add_module_names = False

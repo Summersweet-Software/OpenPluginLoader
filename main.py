@@ -79,30 +79,34 @@ if __name__ == "__main__":
 
     plugin_src = Path("example/exampleplugin")
     plugin_dest = plugin_src / "../plugins"
-    manager.archive_plugin(plugin_src, plugin_dest)
+    # manager.archive_plugin(plugin_src, plugin_dest)
 
-    print()
+    # print()
 
     plugins = manager.discover_plugins()
 
-    print(
-        {
-            plugin.plugin_id: [
-                dep.plugin_id for dep in generate_dependency_list(plugin, plugins)
-            ]
-            for plugin in plugins
-        }
-    )
+    # print(
+    #     {
+    #         plugin.plugin_id: [
+    #             dep.plugin_id for dep in generate_dependency_list(plugin, plugins)
+    #         ]
+    #         for plugin in plugins
+    #     }
+    # )
 
-    print(
-        {
-            name: [dep.plugin_id for dep in deps]
-            for name, deps in create_dependent_dict(plugins).items()
-        }
-    )
+    # print(
+    #     {
+    #         name: [dep.plugin_id for dep in deps]
+    #         for name, deps in create_dependent_dict(plugins).items()
+    #     }
+    # )
 
-    print()
-    print(sort_plugins(plugins))
-    print()
+    # print()
+    # print(sort_plugins(plugins))
+    # print()
 
-    manager.load_all_plugins()
+    # import plugins
+    # import plugins.ExamplePlugin
+    import plugins.ExamplePlugin.__ENTRY__
+
+# manager.load_all_plugins()

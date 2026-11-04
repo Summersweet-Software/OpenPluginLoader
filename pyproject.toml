@@ -1,7 +1,7 @@
 [project]
 name = "openpluginloader"
-version = "1.1.0"
-description = "A plugin loader library meant for wide use and quick adoption."
+version = "2.0.0"
+description = "A Robust Plugin Loading Library For Large-scale Applications."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = ["packaging>=26.3"]
@@ -42,7 +42,6 @@ classifiers = [
 
     # Specify the Python versions you support here.
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "License :: OSI Approved :: MIT License",
@@ -60,7 +59,7 @@ build-plugin = "openpluginloader.__main__:archive_plugin"
 Homepage = "https://summersweet.software"
 Repository = "https://github.com/summersweet-software/openpluginloader"
 Issues = "https://github.com/summersweet-software/openpluginloader/issues"
-# Documentation = "https://openpluginloader.readthedocs.io/en/"
+Documentation = "https://openpluginloader.readthedocs.io/en/"
 
 [dependency-groups]
 dev = [
