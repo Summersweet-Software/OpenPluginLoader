@@ -6,7 +6,7 @@ from openpluginloader.defaultstrategy.importmachinery import (
     DefaultGlobalPluginImportHook,
 )
 from openpluginloader.defaultstrategy.tarplugins import (
-    TarGZPluginScanner,
+    TargzPluginScanner,
     TargzPluginArchiver,
 )
 from openpluginloader.loader import PluginLoader
@@ -40,11 +40,11 @@ def create_default_manager(
     loader = ImportPluginLoader()
     archiver = TargzPluginArchiver(enable_logging=enable_archive_logging)
 
-    targz_scanner = TarGZPluginScanner(plugin_path, loader, archiver)
+    Targz_scanner = TargzPluginScanner(plugin_path, loader, archiver)
     folder_scanner = FolderPluginScanner(plugin_path, loader, archiver)
 
     manager = PluginManager(
-        plugin_scanners=[targz_scanner, folder_scanner],
+        plugin_scanners=[Targz_scanner, folder_scanner],
         api_version=api_version,
         import_hooks=[],
     )

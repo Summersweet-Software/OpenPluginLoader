@@ -34,9 +34,9 @@ from gzip import GzipFile
 set_default_module_cache()  # (VERY IMPORTANT)
 
 
-class TarGZPluginScanner(PluginScanner):
-    """Finds and setups up TarGZPlugins.
-    These are plugins in a targz file."""
+class TargzPluginScanner(PluginScanner):
+    """Finds and setups up TargzPlugins.
+    These are plugins in a Targz file."""
 
     plugin_dir: Path
 
@@ -52,7 +52,7 @@ class TarGZPluginScanner(PluginScanner):
     ):
         self.plugin_dir = plugin_dir
         self.loader = loader
-        self.metaloader = ArchivePluginMetadataLoader()
+        self.metaloader = TargzPluginMetadataLoader()
         self.archiver = archiver
 
     def _is_archive_plugin(self, dir: Path) -> bool:
@@ -66,8 +66,8 @@ class TarGZPluginScanner(PluginScanner):
             self.metaloader,
             self.loader,
             self.archiver,
-            TarGzModuleProvider(Path("")),
-            TarGZLoadTimeModuleProvider(Path("")),
+            TargzModuleProvider(Path("")),
+            TargzLoadTimeModuleProvider(Path("")),
             self,
         )
 
@@ -86,8 +86,8 @@ class TarGZPluginScanner(PluginScanner):
         return output
 
 
-class ArchivePluginMetadataLoader(PluginMetadataLoader):
-    """Loads the metadata of targz plugins"""
+class TargzPluginMetadataLoader(PluginMetadataLoader):
+    """Loads the metadata of Targz plugins"""
 
     def __init__(self):
         pass
@@ -104,7 +104,7 @@ class ArchivePluginMetadataLoader(PluginMetadataLoader):
         data = ""
         if not plugin_src.is_file():
             raise PluginLoadError(
-                "Expected a targz plugin archive when loading plugin metadata."
+                "Expected a Targz plugin archive when loading plugin metadata."
             )
 
         with tarfile.open(plugin_src, "r:gz") as file:
@@ -139,8 +139,8 @@ class ArchivePluginMetadataLoader(PluginMetadataLoader):
         )
 
 
-class TargzPluginArchiver:
-    """Archives plugins in a targz format"""
+class TargzPluginArchiver(PluginArchiver):
+    """Archives plugins in a Targz format"""
 
     __slots__ = ("extension", "enable_logging")
 
@@ -229,14 +229,14 @@ class TargzPluginArchiver:
 # ==== FileLoaders =====
 
 
-class TarGzModuleLoader(FileLoader):
-    """Loads data from a targz-plugin's module(s)
+class TargzModuleLoader(FileLoader):
+    """Loads data from a Targz-plugin's module(s)
 
     see: https://docs.python.org/3/library/importlib.html#importlib.abc.Loader
     """
 
     tar_file_path: Path
-    """Path to the targz file to be opened"""
+    """Path to the Targz file to be opened"""
 
     def __init__(self, fullname, path, tar_file_path: Path):
         super().__init__(fullname, path)
@@ -282,11 +282,11 @@ class TarGzModuleLoader(FileLoader):
 # ===== ModuleProviders ====
 
 
-class TarGzModuleProvider(PluginModuleProvider):
-    """Is able to search for modules inside of a targz containing a `site-packages` folder"""
+class TargzModuleProvider(PluginModuleProvider):
+    """Is able to search for modules inside of a Targz containing a `site-packages` folder"""
 
     sub_path: Path
-    """A path inside of the targz to begin searching"""
+    """A path inside of the Targz to begin searching"""
 
     def __init__(self, sub_path: Path):
         self.sub_path = sub_path
@@ -307,7 +307,7 @@ class TarGzModuleProvider(PluginModuleProvider):
         to change module creation details."""
         return ModuleSpec(
             fullname,
-            TarGzModuleLoader(
+            TargzModuleLoader(
                 fullname,
                 file_path,
                 plugin.metadata.src_path,
@@ -322,13 +322,13 @@ class TarGzModuleProvider(PluginModuleProvider):
         if isinstance(path, list):
             path = path[0] if len(path) > 0 else None
 
-        return self._find_spec_targz(
+        return self._find_spec_Targz(
             plugin, fullname, path, self.sub_path, target
-        ) or self._find_spec_targz(  # Find local modules
+        ) or self._find_spec_Targz(  # Find local modules
             plugin, fullname, path, self.sub_path / "site-packages", target
         )  # if not available, find site-packages
 
-    def _find_spec_targz(
+    def _find_spec_Targz(
         self,
         plugin: Plugin,
         fullname: str,
@@ -384,7 +384,7 @@ class TarGzModuleProvider(PluginModuleProvider):
             return spec
 
 
-class TarGZLoadTimeModuleProvider(TarGzModuleProvider):
+class TargzLoadTimeModuleProvider(TargzModuleProvider):
     """Actually in charge of loading individual files inside of a plugin.
     Only Active during plugin loading.
     """
@@ -399,7 +399,7 @@ class TarGZLoadTimeModuleProvider(TarGzModuleProvider):
     ):
         return ModuleSpec(
             fullname,
-            TarGzModuleLoader(
+            TargzModuleLoader(
                 fullname,
                 file_path,
                 plugin.metadata.src_path,
@@ -410,10 +410,10 @@ class TarGZLoadTimeModuleProvider(TarGzModuleProvider):
 
 
 __all__ = [
-    "TarGZPluginScanner",
-    "ArchivePluginMetadataLoader",
+    "TargzPluginScanner",
+    "TargzPluginMetadataLoader",
     "TargzPluginArchiver",
-    "TarGzModuleLoader",
-    "TarGzModuleProvider",
-    "TarGZLoadTimeModuleProvider",
+    "TargzModuleLoader",
+    "TargzModuleProvider",
+    "TargzLoadTimeModuleProvider",
 ]

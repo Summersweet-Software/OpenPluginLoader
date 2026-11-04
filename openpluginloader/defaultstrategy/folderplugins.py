@@ -23,8 +23,8 @@ import importlib._bootstrap_external
 
 
 class FolderPluginScanner(PluginScanner):
-    """Finds and setups up TarGZPlugins.
-    These are plugins in a targz file."""
+    """Finds and setups up folder-plugins
+    These are plugins in a basic folder."""
 
     plugin_dir: Path
 

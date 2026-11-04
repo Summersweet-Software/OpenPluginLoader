@@ -306,3 +306,19 @@ def test_plugin_load_plugin_3_via_manager_disallow_outside_imports():
         assert False  # The above should always error. If not, we fail the test
     except ModuleNotFoundError:
         assert True  # Test is successful if we can't access the out-of-scope module.
+
+
+@cleansup
+def test_plugin_load_ensure_cant_import_plugin_locals_outside_plugins():
+
+    manager = setup_manager()
+
+    manager.initialize_hooks()
+    plugins = manager.discover_plugins()
+
+    try:
+        import fake_mypy
+
+        assert False  # The above should always error. If not, we fail the test
+    except ModuleNotFoundError:
+        assert True  # Test is successful if we can't access the out-of-scope module.

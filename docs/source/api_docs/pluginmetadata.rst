@@ -99,7 +99,7 @@ Protocols
         A method for loading plugin metadata. Returns the result.
 
         :param ApiVersion api_version: The api version of current plugin api. Used when verifying if the plugin can be loaded.
-        :param Path plugin_src: The path to the plugin we are trying to load the metadata of. 
+        :param Path plugin_src: The path to the plugin we are trying to load the metadata of.
 
 Exceptions
 -----------
