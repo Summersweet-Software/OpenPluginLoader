@@ -11,11 +11,7 @@ Plugin Loader
     plugins are imported and sorted.
 
 
-    .. py:method:: load_plugin(self, plugin: PluginMetadata)
+    .. py:method:: load_plugin(self, plugin: Plugin)
 
         Loads the specified plugin given its metadata.
-
-    .. py:method:: sort_plugin_by_load_order(self, plugin: list[PluginMetadata]) -> list[PluginMetadata]
-
-        Sorts a list of plugins by its load order. Returns a sorted list of plugins.
 

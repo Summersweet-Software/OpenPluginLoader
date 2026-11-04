@@ -23,32 +23,21 @@ Api Reference
 .. py:currentmodule:: openpluginloader.defaultstrategy
 
 
-.. py:class:: DefaultMetadataLoader
+.. py:class:: ImportpluginLoader(PluginLoader)
 
-    Load metadata from tar.gz archives as well as regular folders.
-    Implements the :py:class:`PluginMetadataLoader <openpluginloader.metadata.PluginMetadataLoader>` protocol
+    The default loading strategy for plugins.
+    Uses dynamic imports and temporarily modifies python's path environment
+    (from within import hooks local to Plugins themselves).
 
-    .. note::
+    .. py:method:: load_plugin(self, plugin: Plugin)
 
-        Will be split into two classes in the next major version. Many big changes will be made in that version
-
-.. py:class:: DefaultPluginArchiver(*, extension: str = "tar.gz", enable_logging: bool = True)
-
-    :param str extension: The file extension that emitted plugins should have.
-    :param bool enable_logging: If true (default) then running :code:`archive_plugin` will output logs to the console/terminal
-
-    Archives plugins in a targz format. Implements the :py:class:`PluginArchiver <openpluginloader.archiving.PluginArchiver>` protocol.
+        Loads a plugin by importing :code:`f"plugins.{plugin.metadata.name}.__entry__"`
 
 
-.. py:class:: DefaultPluginScanner
+.. py:function:: create_default_manager(api_version: ApiVersion, plugin_path: Path, enable_archive_logging=True ) -> PluginManager
 
-    Finds plugins either in folders or in archive files (targz).
+    :param bool enable_archive_logging: when enabled- archiving will print out added site-packages and files
 
-    Implements :py:class:`PluginScanner <openpluginloader.scanner.PluginScanner>` protocol.
+    Creates the default plugin manager. This contains the :py:class:`TargzPluginScanner` and :py:class:`FolderPluginScanner`
 
-
-.. py:function:: create_default_manager(api_version: ApiVersion, plugin_path: Path, enable_archive_logging: bool = True) -> PluginManager
-
-    Creates the default plugin manager. It does not initialize the hooks inside the plugin manager, you must call that method yourself.
-
-    :param bool enable_archive_logging: Defaults to :code:`True` and changes whether or not `enable_logging` is true for the plugin archiver.
+    

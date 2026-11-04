@@ -16,4 +16,9 @@ class PluginArchiver(Protocol):
     def dearchive_plugin(self, src: Path, destination: Path) -> Path: ...
 
 
+# TODO:
+# ... provide the ability to find individual files, modules, and packages.
+# ... want to be able to handle filesystem audit events to allow plugin-local files (images, binaries, etc)
+
+
 __all__ = ["PluginArchiver"]

@@ -1,6 +1,8 @@
 from typing import Protocol
+import typing
 
-from openpluginloader.metadata import PluginMetadata
+if typing.TYPE_CHECKING:
+    from openpluginloader.scanner import Plugin
 
 
 class PluginLoader(Protocol):
@@ -9,14 +11,8 @@ class PluginLoader(Protocol):
     plugins are imported
     """
 
-    def load_plugin(self, plugin: PluginMetadata):
+    def load_plugin(self, plugin: "Plugin"):
         """Loads an individual plugin"""
-        ...
-
-    def sort_plugins_by_load_order(
-        self, plugins: list[PluginMetadata]
-    ) -> list[PluginMetadata]:
-        """Determines the load order of plugins"""
         ...
 
 
